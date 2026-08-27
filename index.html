@@ -1,0 +1,3113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>PESB 口试</title>
+<style>
+/* =========================================================================
+   PESB 口试 — 独立 app，不共用任何旧 app 的样式
+   浅色为主，深色可切。阅读优先：正文宽度受限，行高偏松。
+   ========================================================================= */
+
+:root {
+  --bg:        #f7f5f1;
+  --bg-panel:  #ffffff;
+  --bg-sunk:   #f0ede7;
+  --ink:       #1c1b19;
+  --ink-soft:  #5a564f;
+  --ink-faint: #8b857b;
+  --rule:      #e0dbd2;
+  --rule-soft: #ebe7e0;
+
+  --accent:      #8b5a2b;      /* 口试棕 */
+  --accent-soft: #f3e9dc;
+  --core:        #2f6f4f;
+  --core-soft:   #e3f0e8;
+  --deep:        #2a5d8f;
+  --deep-soft:   #e2ecf6;
+  --killer:      #a32e2e;
+  --killer-soft: #f8e4e2;
+
+  --good: #2f6f4f;
+  --half: #b07d1a;
+  --bad:  #a32e2e;
+
+  --warn:      #b45309;
+  --warn-soft: #fdeed7;
+
+  --radius: 10px;
+  --shadow:     0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.045);
+  --shadow-pad: 0 14px 38px rgba(0,0,0,.28);
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Songti SC", "Source Han Serif SC", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  --mono: "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+}
+
+/* 深色 token 要覆盖三种状态，所以下面这一段刻意出现两次：
+
+   1. 跟随系统（根元素上没有任何标记）—— 这是大多数人看到的状态。
+      用 :not([data-theme="light"]) 守住，好让"明确选了浅色"能压过深色系统。
+   2. 明确要深色（本 app 的 ◐ 按钮，或者外层宿主标上 data-theme="dark"）。
+
+   CSS 没法让一条规则同时活在 @media 里和外面，所以只能重复。
+   tools/build_single.py 会断言两份完全一致，写歪了会在打包时报错。
+   —— DARK TOKENS START —— */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg:        #16151a;
+  --bg-panel:  #1e1d23;
+  --bg-sunk:   #26252c;
+  --ink:       #e9e6e0;
+  --ink-soft:  #b0aaa1;
+  --ink-faint: #7d776e;
+  --rule:      #34323a;
+  --rule-soft: #2a2930;
+
+  --accent:      #d8a066;
+  --accent-soft: #3a2e20;
+  --core:        #6fbf94;
+  --core-soft:   #1f3a2c;
+  --deep:        #7cb2e0;
+  --deep-soft:   #1e3245;
+  --killer:      #e58b84;
+  --killer-soft: #3d2320;
+
+  --good: #6fbf94;
+  --half: #d8b45c;
+  --bad:  #e58b84;
+
+  --warn:      #e0a94f;
+  --warn-soft: #3d2f18;
+
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  --shadow-pad: 0 14px 38px rgba(0,0,0,.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #16151a;
+  --bg-panel:  #1e1d23;
+  --bg-sunk:   #26252c;
+  --ink:       #e9e6e0;
+  --ink-soft:  #b0aaa1;
+  --ink-faint: #7d776e;
+  --rule:      #34323a;
+  --rule-soft: #2a2930;
+
+  --accent:      #d8a066;
+  --accent-soft: #3a2e20;
+  --core:        #6fbf94;
+  --core-soft:   #1f3a2c;
+  --deep:        #7cb2e0;
+  --deep-soft:   #1e3245;
+  --killer:      #e58b84;
+  --killer-soft: #3d2320;
+
+  --good: #6fbf94;
+  --half: #d8b45c;
+  --bad:  #e58b84;
+
+  --warn:      #e0a94f;
+  --warn-soft: #3d2f18;
+
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  --shadow-pad: 0 14px 38px rgba(0,0,0,.6);
+}
+/* —— DARK TOKENS END —— */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ───────────────────────────── topbar ───────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px 20px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--rule);
+}
+.brand { display: flex; flex-direction: column; line-height: 1.25; }
+.brand strong { font-size: 16px; letter-spacing: .02em; }
+.brand-sub { font-size: 11.5px; color: var(--ink-faint); }
+
+.modes { display: flex; gap: 4px; margin-left: auto; }
+.mode-btn {
+  font: inherit; font-size: 13.5px;
+  padding: 6px 13px; border-radius: 999px;
+  border: 1px solid transparent; background: none; color: var(--ink-soft);
+  cursor: pointer; transition: background .12s, color .12s;
+}
+.mode-btn:hover { background: var(--bg-sunk); }
+.mode-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.mode-btn span { margin-left: 2px; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.stat { font-size: 11.5px; color: var(--ink-faint); font-family: var(--mono); white-space: nowrap; }
+.icon-btn {
+  font: inherit; font-size: 15px; width: 30px; height: 30px;
+  border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--bg-panel); color: var(--ink-soft); cursor: pointer;
+}
+.icon-btn:hover { background: var(--bg-sunk); }
+
+/* ───────────────────────────── layout ───────────────────────────── */
+.content { max-width: 1080px; margin: 0 auto; padding: 26px 20px 90px; }
+.panel { display: none; }
+.panel.active { display: block; animation: fade .18s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+.panel-head {
+  display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  padding-bottom: 12px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.panel-head h2 { margin: 0; font-size: 19px; font-weight: 650; }
+.muted { color: var(--ink-faint); font-weight: 400; font-size: 13px; }
+.controls { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+input[type="search"], select {
+  font: inherit; font-size: 13px;
+  padding: 5px 9px; border: 1px solid var(--rule); border-radius: 7px;
+  background: var(--bg-panel); color: var(--ink);
+}
+input[type="search"] { min-width: 200px; }
+input[type="search"]:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+.btn-primary, .btn-ghost {
+  font: inherit; font-size: 13.5px; padding: 6px 14px;
+  border-radius: 8px; cursor: pointer; transition: background .12s;
+}
+.btn-primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); font-weight: 600; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: var(--bg-panel); color: var(--ink-soft); border: 1px solid var(--rule); }
+.btn-ghost:hover { background: var(--bg-sunk); }
+.btn-ghost.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.btn-tiny { font-size: 12px; padding: 4px 10px; }
+.btn-big { font-size: 15px; padding: 10px 28px; }
+
+.lede { color: var(--ink-soft); font-size: 14.5px; max-width: 62ch; }
+.lede-wide { max-width: 80ch; margin-bottom: 22px; }
+
+/* ─────────────────────────── 演练 setup ─────────────────────────── */
+.drill-setup { max-width: 660px; }
+.drill-setup h2 { font-size: 22px; margin: 4px 0 8px; }
+.setup-block { margin: 22px 0; }
+.setup-label {
+  display: block; font-size: 11.5px; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--ink-faint); margin-bottom: 8px;
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip-row-tight { margin-top: 8px; }
+.chip {
+  font: inherit; font-size: 13px; padding: 5px 12px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--bg-panel); color: var(--ink-soft); cursor: pointer;
+}
+.chip:hover { background: var(--bg-sunk); }
+.chip.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.chip-all { font-size: 12px; color: var(--ink-faint); }
+.chip-note { font-size: 11px; opacity: .7; margin-left: 3px; }
+.chip-n { font-family: var(--mono); font-size: 11px; opacity: .65; margin-left: 4px; }
+.setup-count { font-size: 13px; color: var(--ink-faint); margin-top: 12px; }
+
+/* ─────────────────────────── 演练 stage ─────────────────────────── */
+.drill-bar {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px;
+}
+.drill-pos { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin: 0 auto; }
+
+.qcard {
+  background: var(--bg-panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.qcard-head { padding: 22px 26px 18px; border-bottom: 1px solid var(--rule-soft); }
+.qcard-tags { display: flex; gap: 7px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.tag {
+  font-size: 11px; padding: 2px 9px; border-radius: 999px;
+  font-weight: 600; letter-spacing: .02em;
+}
+.tag-core   { background: var(--core-soft);   color: var(--core); }
+.tag-deep   { background: var(--deep-soft);   color: var(--deep); }
+.tag-killer { background: var(--killer-soft); color: var(--killer); }
+.tag-group  { background: var(--bg-sunk); color: var(--ink-soft); }
+.tag-id     { font-family: var(--mono); background: none; color: var(--ink-faint); padding: 2px 0; }
+
+.qcard-q {
+  font-family: var(--serif); font-size: 21px; line-height: 1.42;
+  margin: 0 0 8px; font-weight: 500;
+}
+.qcard-qcn { font-size: 13.5px; color: var(--ink-faint); margin: 0; }
+
+.qcard-prompt {
+  padding: 16px 26px; background: var(--bg-sunk);
+  font-size: 13.5px; color: var(--ink-soft);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.qcard-body { padding: 4px 26px 26px; }
+
+.ans-block { margin: 22px 0 0; }
+.ans-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--ink-faint); margin-bottom: 9px; font-weight: 600;
+}
+.beats { margin: 0; padding: 0; list-style: none; counter-reset: b; }
+.beats li {
+  counter-increment: b; position: relative;
+  padding: 5px 0 5px 30px; font-size: 14.5px; line-height: 1.6;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.beats li:last-child { border-bottom: none; }
+.beats li::before {
+  content: counter(b); position: absolute; left: 0; top: 7px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.script {
+  font-family: var(--serif); font-size: 15.5px; line-height: 1.72;
+  padding: 16px 20px; border-left: 3px solid var(--accent);
+  background: var(--accent-soft); border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--ink);
+}
+
+.cn-explain { font-size: 14.5px; line-height: 1.78; color: var(--ink-soft); }
+.cn-explain p { margin: 0 0 12px; }
+.cn-explain p:last-child { margin-bottom: 0; }
+.cn-explain strong { color: var(--ink); font-weight: 650; }
+.cn-explain table { border-collapse: collapse; margin: 12px 0; font-size: 13px; width: 100%; }
+.cn-explain th, .cn-explain td { border: 1px solid var(--rule); padding: 5px 9px; text-align: left; }
+.cn-explain th { background: var(--bg-sunk); font-weight: 600; }
+
+.fu { border-top: 1px solid var(--rule-soft); padding-top: 12px; margin-top: 12px; }
+.fu:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+.fu-q { font-family: var(--serif); font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+.fu-q::before { content: "↳ "; color: var(--ink-faint); font-family: var(--sans); }
+.fu-a { font-size: 14px; color: var(--ink-soft); margin: 0; line-height: 1.7; }
+
+.callout {
+  padding: 13px 17px; border-radius: var(--radius);
+  font-size: 14px; line-height: 1.68; margin: 18px 0 0;
+}
+.callout-trap  { background: var(--killer-soft); border-left: 3px solid var(--killer); }
+.callout-lab   { background: var(--core-soft);   border-left: 3px solid var(--core); }
+.callout-risk  { background: var(--accent-soft); border-left: 3px solid var(--accent); }
+.callout-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .09em;
+  font-weight: 700; display: block; margin-bottom: 4px; opacity: .82;
+}
+.callout-trap .callout-label { color: var(--killer); }
+.callout-lab  .callout-label { color: var(--core); }
+.callout-risk .callout-label { color: var(--accent); }
+
+.grade-row {
+  display: flex; gap: 10px; margin-top: 26px; padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.grade-btn {
+  font: inherit; font-size: 14px; font-weight: 600;
+  flex: 1; padding: 11px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--bg-panel);
+}
+.grade-btn small { display: block; font-size: 11.5px; font-weight: 400; opacity: .7; margin-top: 1px; }
+.grade-good { color: var(--good); } .grade-good:hover { background: var(--core-soft); border-color: var(--good); }
+.grade-half { color: var(--half); } .grade-half:hover { background: var(--accent-soft); border-color: var(--half); }
+.grade-bad  { color: var(--bad);  } .grade-bad:hover  { background: var(--killer-soft); border-color: var(--bad); }
+
+/* ─────────────────────────── 题库 ─────────────────────────── */
+.bank-count { font-size: 12.5px; color: var(--ink-faint); margin: 0 0 14px; }
+.bank-group-head {
+  font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--ink-faint); font-weight: 700;
+  margin: 26px 0 10px; padding-bottom: 5px; border-bottom: 1px solid var(--rule);
+}
+.bank-group-head:first-child { margin-top: 0; }
+
+.bank-item {
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--bg-panel); margin-bottom: 8px; overflow: hidden;
+}
+.bank-item summary {
+  padding: 12px 16px; cursor: pointer; list-style: none;
+  display: flex; align-items: baseline; gap: 11px;
+}
+.bank-item summary::-webkit-details-marker { display: none; }
+.bank-item summary:hover { background: var(--bg-sunk); }
+.bank-q { font-family: var(--serif); font-size: 16px; flex: 1; line-height: 1.45; }
+.bank-qcn { font-size: 12.5px; color: var(--ink-faint); display: block; margin-top: 2px; font-family: var(--sans); }
+.bank-mark { font-family: var(--mono); font-size: 13px; width: 15px; text-align: center; flex: none; }
+.mark-good { color: var(--good); } .mark-half { color: var(--half); }
+.mark-bad  { color: var(--bad);  } .mark-none { color: var(--rule); }
+.bank-body { padding: 4px 16px 18px; border-top: 1px solid var(--rule-soft); }
+
+/* ─────────────────────────── 原文 ─────────────────────────── */
+.paper-meta {
+  font-size: 13px; color: var(--ink-soft); margin-bottom: 24px;
+  padding: 14px 18px; background: var(--bg-panel);
+  border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.paper-meta .pm-title { font-family: var(--serif); font-size: 17px; color: var(--ink); display: block; margin-bottom: 4px; }
+.paper-meta .pm-line { font-size: 12.5px; color: var(--ink-faint); font-family: var(--mono); }
+
+.paper-sec { margin-bottom: 34px; }
+.paper-sec-head {
+  font-family: var(--serif); font-size: 18px; font-weight: 600;
+  margin: 0 0 14px; padding-bottom: 6px; border-bottom: 2px solid var(--accent);
+  display: inline-block;
+}
+.paper-sec-head .cn { font-family: var(--sans); font-size: 13px; color: var(--ink-faint); font-weight: 400; margin-left: 8px; }
+
+.para {
+  background: var(--bg-panel); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 18px 22px; margin-bottom: 12px;
+}
+.para-label { font-weight: 650; font-size: 14.5px; margin: 0 0 6px; }
+.para-text {
+  font-family: var(--serif); font-size: 15.5px; line-height: 1.78;
+  margin: 0; color: var(--ink);
+}
+.para-hooks { margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.hooks-label { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-faint); font-weight: 600; }
+.hook {
+  font: inherit; font-size: 12.5px; padding: 3px 10px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--bg-sunk); color: var(--ink-soft); cursor: pointer;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hook:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.hook-id { font-family: var(--mono); font-size: 11px; opacity: .6; margin-right: 4px; }
+
+/* ─────────────────────────── 联动 ─────────────────────────── */
+.lab-item {
+  background: var(--bg-panel); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 20px 24px; margin-bottom: 14px;
+}
+.lab-step { font-family: var(--serif); font-size: 17.5px; font-weight: 600; margin: 0 0 14px; }
+.lab-grid { display: grid; grid-template-columns: 62px 1fr; gap: 6px 14px; align-items: start; font-size: 14px; }
+.lab-k {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ink-faint); font-weight: 700; padding-top: 4px;
+}
+.lab-v { line-height: 1.68; }
+.lab-v.paper-quote { font-family: var(--serif); color: var(--ink-soft); font-style: italic; }
+.lab-v.tech { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.lab-say {
+  margin-top: 16px; padding: 14px 18px;
+  background: var(--core-soft); border-left: 3px solid var(--core);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-family: var(--serif); font-size: 15px; line-height: 1.7;
+}
+.lab-edge { margin-top: 12px; font-size: 13.5px; color: var(--ink-soft); }
+
+/* ─────────────────────────── 速记 ─────────────────────────── */
+.quick-nav { display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--rule); }
+.qnav {
+  font: inherit; font-size: 14px; padding: 8px 18px;
+  border: none; background: none; color: var(--ink-soft); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.qnav:hover { color: var(--ink); }
+.qnav.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.quick-pane { display: none; }
+.quick-pane.active { display: block; }
+
+.open-note { font-size: 14px; color: var(--ink-soft); max-width: 66ch; margin-bottom: 22px; }
+.open-beat {
+  display: grid; grid-template-columns: 84px 1fr; gap: 16px;
+  padding: 14px 0; border-bottom: 1px solid var(--rule-soft); align-items: start;
+}
+.open-beat:last-of-type { border-bottom: none; }
+.open-beat-k {
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--accent); font-weight: 700; padding-top: 4px;
+}
+.open-beat-t { font-family: var(--serif); font-size: 16px; line-height: 1.68; }
+
+.weak-item {
+  background: var(--bg-panel); border: 1px solid var(--rule);
+  border-left-width: 4px; border-radius: var(--radius);
+  padding: 18px 22px; margin-bottom: 12px;
+}
+.weak-critical { border-left-color: var(--killer); }
+.weak-high     { border-left-color: #d97706; }
+.weak-medium   { border-left-color: var(--deep); }
+.weak-low      { border-left-color: var(--rule); }
+.weak-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.weak-what { font-family: var(--serif); font-size: 17px; font-weight: 600; }
+.weak-sev { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.sev-critical { background: var(--killer-soft); color: var(--killer); }
+.sev-high     { background: var(--warn-soft); color: var(--warn); }
+.sev-medium   { background: var(--deep-soft); color: var(--deep); }
+.sev-low      { background: var(--bg-sunk); color: var(--ink-faint); }
+.weak-where { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); }
+.weak-detail { font-size: 14px; line-height: 1.7; margin: 0 0 12px; color: var(--ink-soft); }
+.weak-fix {
+  padding: 12px 16px; background: var(--core-soft);
+  border-left: 3px solid var(--core); border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 14px; line-height: 1.68;
+}
+.weak-note { font-size: 12.5px; color: var(--ink-faint); margin-top: 10px; font-style: italic; }
+.weak-jump { margin-top: 12px; }
+
+table.numbers { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.numbers th, table.numbers td { border-bottom: 1px solid var(--rule-soft); padding: 9px 12px; text-align: left; vertical-align: top; }
+table.numbers th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-faint); border-bottom: 1px solid var(--rule); }
+table.numbers td.v { font-family: var(--mono); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+table.numbers td.why { color: var(--ink-soft); font-size: 13px; }
+table.numbers tr:hover { background: var(--bg-sunk); }
+
+.term { padding: 13px 0; border-bottom: 1px solid var(--rule-soft); }
+.term-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.term-en { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.term-cn { font-size: 13px; color: var(--ink-faint); }
+.term-def { font-size: 14px; line-height: 1.7; color: var(--ink-soft); margin: 0; }
+
+/* ─────────────────────────── 朗读 ───────────────────────────
+   Web Speech API 合成音，不是真人录音。静态页面没有后端，托管不了几百段
+   录音，这是务实的替代。语音质量的差别主要在这台机器装了什么——神经网络
+   语音（Edge 的 "Online (Natural)"、macOS 的 Enhanced/Premium）接近真人，
+   老的 SAPI 离线语音明显是机器音。面板里两种都列，前者标 ✦自然。 */
+.say-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0; margin-left: 6px;
+  border: 1px solid var(--rule); border-radius: 50%;
+  background: var(--bg-panel); color: var(--ink-faint);
+  font-size: 11px; line-height: 1; cursor: pointer; vertical-align: middle;
+  flex: none; transition: color .12s, border-color .12s;
+}
+.say-btn:hover { color: var(--accent); border-color: var(--accent); }
+.say-btn.speaking {
+  color: var(--accent); border-color: var(--accent);
+  animation: say-pulse .55s ease-in-out infinite alternate;
+}
+@keyframes say-pulse { from { box-shadow: 0 0 0 0 var(--accent-soft); } to { box-shadow: 0 0 0 5px transparent; } }
+
+/* 成组朗读：整段开场白、整串 beats——比逐句点更常用 */
+.say-run {
+  font: inherit; font-size: 11.5px; padding: 3px 10px; margin-left: 8px;
+  border: 1px solid var(--rule); border-radius: 999px;
+  background: var(--bg-panel); color: var(--ink-faint); cursor: pointer;
+  vertical-align: middle;
+}
+.say-run:hover { color: var(--accent); border-color: var(--accent); }
+.say-run.speaking { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+.ans-label { display: flex; align-items: center; }
+.term-h .say-btn, .fu-q .say-btn { vertical-align: baseline; }
+
+/* ───────────────────────── 朗读设置面板 ───────────────────────── */
+.voice-pad {
+  position: fixed; top: 56px; right: 14px; z-index: 60;
+  width: min(350px, calc(100vw - 28px));
+  padding: 14px 16px 16px;
+  background: var(--bg-panel); border: 1px solid var(--rule);
+  border-radius: var(--radius); box-shadow: var(--shadow-pad);
+  font-size: 13px;
+}
+.voice-pad[hidden] { display: none; }
+
+.vp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+.vp-head strong { font-size: 14px; }
+.vp-x { margin-left: auto; }
+
+.vp-tabs {
+  display: flex; border: 1px solid var(--rule);
+  border-radius: 8px; overflow: hidden; margin-bottom: 12px;
+}
+.vp-tabs button {
+  flex: 1; padding: 6px 8px; cursor: pointer; font: inherit; font-size: 13px;
+  background: transparent; color: var(--ink-soft); border: none;
+}
+.vp-tabs button.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+.vp-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
+.vp-row > span { flex: none; width: 84px; color: var(--ink-faint); font-size: 12px; }
+.vp-row select {
+  flex: 1; min-width: 0; font: inherit; font-size: 12.5px; padding: 5px 6px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px;
+}
+.vp-row input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.vp-row output {
+  flex: none; width: 46px; text-align: right;
+  font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint);
+}
+
+.vp-actions { display: flex; gap: 6px; margin: 12px 0 8px; }
+.vp-btn { flex: 1; font-size: 12px; padding: 6px 4px; }
+.vp-btn.speaking { border-color: var(--accent); color: var(--accent); }
+
+.vp-note { color: var(--ink-faint); font-size: 11.5px; line-height: 1.62; margin: 7px 0 0; }
+.vp-warn { color: var(--killer); font-size: 11.5px; line-height: 1.62; margin: 7px 0 0; }
+
+.empty { color: var(--ink-faint); font-size: 14px; padding: 40px 0; text-align: center; }
+mark { background: var(--accent-soft); color: var(--accent); padding: 0 2px; border-radius: 2px; }
+
+@media (max-width: 760px) {
+  .topbar { flex-wrap: wrap; gap: 10px; }
+  .modes { order: 3; width: 100%; margin-left: 0; overflow-x: auto; }
+  .topbar-right { margin-left: auto; }
+  .content { padding: 20px 14px 70px; }
+  .qcard-head, .qcard-body { padding-left: 18px; padding-right: 18px; }
+  .qcard-q { font-size: 18px; }
+  .grade-row { flex-direction: column; }
+  .lab-grid, .open-beat { grid-template-columns: 1fr; gap: 3px; }
+  .controls { width: 100%; margin-left: 0; }
+  input[type="search"] { min-width: 0; flex: 1; }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <strong>PESB 口试</strong>
+    <span class="brand-sub">Assignment&nbsp;#2 · Protease-Resistant Display Linker</span>
+  </div>
+
+  <nav class="modes" role="tablist">
+    <button class="mode-btn active" data-mode="drill" role="tab">🎤 <span>演练</span></button>
+    <button class="mode-btn"        data-mode="bank"  role="tab">📚 <span>题库</span></button>
+    <button class="mode-btn"        data-mode="paper" role="tab">📄 <span>原文</span></button>
+    <button class="mode-btn"        data-mode="lab"   role="tab">🔬 <span>联动</span></button>
+    <button class="mode-btn"        data-mode="quick" role="tab">⚡ <span>速记</span></button>
+  </nav>
+
+  <div class="topbar-right">
+    <span class="stat" id="stat-line">–</span>
+    <button id="voice-toggle" class="icon-btn" aria-expanded="false"
+      title="朗读设置：声音、语速、音调 · 每个 🔊 都跟着这里的设置">🎧</button>
+    <button id="theme-toggle" class="icon-btn" title="切换深浅色">◐</button>
+  </div>
+</header>
+
+<!-- 朗读设置面板。内容由 app.js 按这台机器真正装了哪些语音渲染，所以这里是空的。 -->
+<div id="voice-pad" class="voice-pad" hidden></div>
+
+<main class="content">
+
+  <!-- ══════════════════════════ 演练 ══════════════════════════ -->
+  <section id="panel-drill" class="panel active">
+
+    <div class="drill-setup" id="drill-setup">
+      <h2>口试演练</h2>
+      <p class="lede">
+        随机抽一题。<strong>先自己开口说完整段</strong>，再翻答案对照。
+        不要默读——口试考的是说得出来，不是看得懂。
+      </p>
+
+      <div class="setup-block">
+        <label class="setup-label">范围</label>
+        <div class="chip-row" id="drill-groups"></div>
+        <div class="chip-row chip-row-tight">
+          <button class="chip chip-all" data-all="on">全选</button>
+          <button class="chip chip-all" data-all="off">全不选</button>
+        </div>
+      </div>
+
+      <div class="setup-block">
+        <label class="setup-label">难度</label>
+        <div class="chip-row" id="drill-levels"></div>
+      </div>
+
+      <div class="setup-block">
+        <label class="setup-label">优先</label>
+        <div class="chip-row">
+          <button class="chip active" id="drill-weighted" data-on="1">
+            没答好的先出 <span class="chip-note">按自评加权</span>
+          </button>
+        </div>
+      </div>
+
+      <button id="drill-start" class="btn-primary btn-big">开始 →</button>
+      <p class="setup-count" id="drill-count"></p>
+    </div>
+
+    <div class="drill-stage" id="drill-stage" hidden>
+      <div class="drill-bar">
+        <button id="drill-back" class="btn-ghost btn-tiny">‹ 设置</button>
+        <span class="drill-pos" id="drill-pos"></span>
+        <button id="drill-skip" class="btn-ghost btn-tiny">跳过 ›</button>
+      </div>
+      <article id="drill-card"></article>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════ 题库 ══════════════════════════ -->
+  <section id="panel-bank" class="panel">
+    <div class="panel-head">
+      <h2>题库 <span class="muted" id="bank-total"></span></h2>
+      <div class="controls">
+        <input type="search" id="bank-search" placeholder="搜题目、要点、术语…" autocomplete="off">
+        <select id="bank-group"></select>
+        <select id="bank-level">
+          <option value="">全部难度</option>
+          <option value="core">core · 必被问</option>
+          <option value="deep">deep · 深追问</option>
+          <option value="killer">killer · 阴招</option>
+        </select>
+        <select id="bank-status">
+          <option value="">全部状态</option>
+          <option value="good">✓ 答得出</option>
+          <option value="half">~ 半会</option>
+          <option value="bad">✕ 不会</option>
+          <option value="none">· 没练过</option>
+        </select>
+        <button id="bank-expand" class="btn-ghost btn-tiny">全部展开</button>
+      </div>
+    </div>
+    <p class="bank-count" id="bank-count"></p>
+    <div id="bank-body"></div>
+  </section>
+
+  <!-- ══════════════════════════ 原文 ══════════════════════════ -->
+  <section id="panel-paper" class="panel">
+    <div class="panel-head">
+      <h2>我交的作业 <span class="muted">逐段 · 挂着会被问什么</span></h2>
+      <div class="controls">
+        <button id="paper-risk" class="btn-ghost btn-tiny active">显示风险批注</button>
+      </div>
+    </div>
+    <div class="paper-meta" id="paper-meta"></div>
+    <div id="paper-body"></div>
+  </section>
+
+  <!-- ══════════════════════════ 联动 ══════════════════════════ -->
+  <section id="panel-lab" class="panel">
+    <div class="panel-head">
+      <h2>我真的做过 <span class="muted">作业里的每一步 ↔ 实验台上的同一件事</span></h2>
+    </div>
+    <p class="lede lede-wide">
+      这是你在这场口试里别人没有的东西。作业写的是 “I would…”，
+      而这些你几乎每一步都真做过——只是换了个课题。
+      考官问 “how would you…” 的时候，你可以回答 <strong>“I have done this.”</strong>
+    </p>
+    <div id="lab-body"></div>
+  </section>
+
+  <!-- ══════════════════════════ 速记 ══════════════════════════ -->
+  <section id="panel-quick" class="panel">
+
+    <div class="quick-nav">
+      <button class="qnav active" data-q="opening">开场白</button>
+      <button class="qnav" data-q="weak">死穴</button>
+      <button class="qnav" data-q="numbers">数字</button>
+      <button class="qnav" data-q="terms">术语</button>
+    </div>
+
+    <div id="quick-opening" class="quick-pane active"></div>
+    <div id="quick-weak"    class="quick-pane"></div>
+    <div id="quick-numbers" class="quick-pane"></div>
+    <div id="quick-terms"   class="quick-pane"></div>
+
+  </section>
+
+</main>
+<script>
+/* ══════════ data/paper.js ══════════ */
+/* =========================================================================
+   PESB 口试 · 作业原文（分段）
+   来源：C:\Users\Admin\Downloads\PESB_Assignment2\20260824-PESB_Assignment2_FINAL.docx
+   （2026-08-24 提交版，逐字取出，未改动一个词。）
+
+   每一段挂三样东西：
+     hooks  — 考官读到这一句时最可能开口问的问题（指向 questions.js 的 id）
+     risk   — 这一句自己带着的风险：写得含糊、写得太满、或者写错了
+   原文一个字都不要动。改的是你怎么讲它。
+   ========================================================================= */
+
+window.ORAL = window.ORAL || {};
+
+window.ORAL.paperMeta = {
+  title: 'Evolving a Protease-Resistant Display Linker for Yeast-Based Oral Antigen Delivery',
+  course: 'PESB 2025/2026 — Assignment #2',
+  author: '作者信息在公开版中略去',
+  submitted: '2026-08-24',
+  wordish: '约 1100 词 · 5 节 + 3 篇文献'
+};
+
+window.ORAL.paper = [
+
+/* ───────────────────────────────── Problem ───────────────────────────── */
+{
+  id: 'p-problem',
+  section: 'Problem',
+  cn: '问题',
+  paras: [
+    {
+      id: 'p1',
+      text: 'Saccharomyces cerevisiae is an attractive chassis for oral antigen delivery. It is robust, inexpensive to produce, naturally particulate, and there is already a well-established system for displaying heterologous proteins on its surface. In principle, an antigen could be delivered as a freeze-dried yeast preparation without requiring a cold chain or a lipid formulation.',
+      hooks: ['a1', 'a2', 'b5', 'a5'],
+      risk: '"naturally particulate" 是你在暗示 β-glucan / mannan 有佐剂作用，但你没写出来。考官如果追问 "why does particulate matter"，你要能补上：颗粒能被 M cell 和树突细胞摄取，β-1,3-glucan 是 Dectin-1 的配体——这是酵母自带佐剂的分子基础。'
+    },
+    {
+      id: 'p2',
+      text: 'One problem is that the displayed antigen may not remain attached to the yeast during passage through the gastrointestinal tract. Yeast surface display uses Aga2p, which is anchored to the cell wall through Aga1p [1]. In the standard pCTCON2-type system, the displayed protein is flanked by an N-terminal HA tag and a C-terminal c-Myc tag [2]. A short flexible linker is useful for keeping the displayed protein accessible and allowing it to move relatively independently of the cell surface. At the same time, flexible peptide sequences can be good substrates for proteases. An oral particle would first encounter pepsin under acidic gastric conditions and later pancreatic proteases in the small intestine. The yeast cell itself may remain intact even if the displayed antigen is cleaved away, leaving an intact particle with little or no antigen on its surface.',
+      hooks: ['b1', 'b2', 'b3', 'a4', 'e1'],
+      risk: '★ 这一段是全篇被追问概率最高的地方。"a short flexible linker" —— 哪一个 linker？pCTCON2 里 Aga2 和插入片段之间不止一段序列，HA tag 本身就在中间。你随机化的必须是 **HA 和抗原之间**那一段，否则读数不成立（见 f2）。原文没点明，考官一定会让你画图。'
+    },
+    {
+      id: 'p3',
+      text: 'This makes the linker an interesting target for engineering. It is a short sequence that can be changed without changing the antigen itself. However, rational design would be difficult because pepsin and the pancreatic proteases have different and partly overlapping sequence preferences. A sequence that works well against one enzyme may not perform well against the others. Instead of trying to predict a single optimal sequence, I would therefore use directed evolution and let the protease challenge determine which linker variants perform best.',
+      hooks: ['c1', 'e6', 'c4', 'a3'],
+      risk: '这是你全篇最强的一句 logic。"partly overlapping sequence preferences" 你必须能立刻举例：pepsin 和 chymotrypsin 都爱切芳香族（Phe/Trp/Tyr），这是 overlapping；trypsin 只切 Lys/Arg，这是 different。举不出例子，这句就变成空话。'
+    }
+  ]
+},
+
+/* ──────────────────────────── Possible Approaches ─────────────────────── */
+{
+  id: 'p-approaches',
+  section: 'Possible Approaches',
+  cn: '备选方案',
+  paras: [
+    {
+      id: 'p4',
+      label: '1. Shorten or stiffen the linker by design.',
+      text: 'Removing residues or introducing prolines might reduce protease accessibility, but it could also affect the flexibility and accessibility of the displayed protein. It would also require choosing a sequence without knowing how it will behave in the presence of several different proteases.',
+      hooks: ['c2'],
+      risk: '"introducing prolines" —— 考官会问 why proline specifically。答案是两层：① Pro 使主链构象受限，蛋白酶活性位点要求底物以伸展构象进入 cleft，刚性链进不去；② 多数丝氨酸蛋白酶不切 X-Pro 键（trypsin 遇到 Lys-Pro / Arg-Pro 就不切）。你要能说出第二层，那才是分子层面的答案。'
+    },
+    {
+      id: 'p5',
+      label: '2. Protect the whole particle instead.',
+      text: 'An enteric coating or another form of encapsulation could reduce exposure to gastric conditions, but it does not solve the problem of antigen cleavage after the particle reaches the small intestine.',
+      hooks: ['c3'],
+      risk: '这一条你驳得干净，但要小心：enteric coating 是**真的可行**的工业方案（耐酸包衣 pH 5.5 以上才溶）。别把它说成 "不行"，要说成 "解决不了第二段"。而且诚实一点：这两条其实是互补的，不是二选一——考官喜欢听到这种。'
+    },
+    {
+      id: 'p6',
+      label: '3. Randomize the linker and select for protease resistance.',
+      text: 'I would construct a linker library, expose the displayed proteins to the proteases they are expected to encounter, and select cells that retain the largest amount of the distal part of the construct. This directly couples the selection to the property that I want to improve. I choose this one.',
+      hooks: ['c4', 'b6'],
+      risk: '"directly couples the selection to the property" —— 这就是 genotype–phenotype linkage 的另一种说法。考官可能直接问 "what makes this coupling work"，你要回到质粒在细胞里、表型在细胞表面这一点上（b6）。'
+    }
+  ]
+},
+
+/* ───────────────────────────── Why This Approach ──────────────────────── */
+{
+  id: 'p-why',
+  section: 'Why This Approach',
+  cn: '为什么选这条路',
+  paras: [
+    {
+      id: 'p7',
+      text: 'The main advantage of the yeast display system is that it already provides a simple readout that can be used for selection. The HA tag is close to Aga2p, while the c-Myc tag is on the distal side of the displayed construct [2]. If the linker is cleaved, the distal c-Myc signal should decrease while the proximal HA signal is retained. The c-Myc/HA ratio can therefore be used as a proxy for how much of the displayed construct remains attached after protease treatment.',
+      hooks: ['f1', 'f2', 'b3', 'i4'],
+      risk: '★ 核心读数。有一个你没写、但一问就露的漏洞：如果切点在 **HA 的近端**（Aga2 和 HA 之间），HA 和 c-Myc **一起掉**，细胞变成双阴性——它不会得高 ratio，而是直接从 gate 里消失。所以 ratio 只报告 "HA 与 c-Myc 之间" 的切割。这个限制自己主动讲出来，是加分的。'
+    },
+    {
+      id: 'p8',
+      text: 'This is useful because the ratio also reduces the effect of differences in baseline expression between cells. Variants that simply display more protein should not automatically win the selection. However, c-Myc loss would not by itself prove that the linker was cut; it could also result from degradation of the C-terminal region or changes in antibody accessibility. For that reason, the best candidates would need to be tested separately after the selection.',
+      hooks: ['f1', 'f2', 'i6', 'i5'],
+      risk: '这段自己承认了 confound，写得很好——**口试时一定要主动说出来**，别等考官挖。主动承认 limitation 在 PESB 的评分里是 discussion 分。'
+    },
+    {
+      id: 'p9',
+      text: 'The oral-delivery application is the motivation for the project rather than its final endpoint. The immediate goal is to obtain a linker that allows antigen display to survive a defined gastrointestinal protease challenge. Whether the resulting yeast particle can induce an immune response would be a separate experiment.',
+      hooks: ['a5', 'j5', 'j4'],
+      risk: '这是你最聪明的一句话——把 scope 收窄，堵死 "你怎么证明有免疫原性" 这一整条追问线。口试开场就应该主动说这句。'
+    }
+  ]
+},
+
+/* ────────────────────────────── Methodology ───────────────────────────── */
+{
+  id: 'p-method',
+  section: 'Methodology',
+  cn: '方法',
+  paras: [
+    {
+      id: 'p10',
+      label: '1. Randomize the linker.',
+      text: 'I would randomize four to five positions in the linker using NNK codons, while keeping the antigen and the rest of the display construct unchanged. Five randomized positions would give a library with roughly 10⁶ possible peptide sequences, so library coverage would be an important practical consideration. The library could be assembled by in vivo homologous recombination of a degenerate oligonucleotide into a linearized yeast display vector.',
+      hooks: ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'],
+      risk: '★ 数字必须算得出来。20⁵ = 3.2×10⁶，不是 10⁶——你写 "roughly 10⁶" 是量级对但偏小一档，考官让你现算你要能立刻给 3.2×10⁶（蛋白层面）和 32⁵ = 3.4×10⁷（DNA 层面）。而且 docx 里上标掉了，纸面上印成 "106"，**你要先说明那是 10 的 6 次方**，别让考官以为你写了 106 个序列。'
+    },
+    {
+      id: 'p11',
+      label: '2. Display and pre-sort.',
+      text: 'After induction with galactose, the library would be stained for HA and c-Myc. Cells positive for both tags would be collected before protease selection. This removes variants that fail to display the construct or contain an early stop codon, so that the later selection is focused on protease resistance rather than baseline expression.',
+      hooks: ['b4', 'd1', 'f3', 'f6'],
+      risk: '"contain an early stop codon" —— 这句直接连回 NNK：NNK 只留 TAG 一个终止密码子，5 个位点里出现至少一个 TAG 的概率是 1−(31/32)⁵ ≈ 15%。你能报这个 15%，说明你不是抄的。'
+    },
+    {
+      id: 'p12',
+      label: '3. Protease challenge.',
+      text: 'The pre-sorted library would be exposed first to pepsin under acidic, gastric-like conditions and then to a pancreatic protease mixture under intestinal-like conditions. Using both stages should favour linkers that can tolerate several different proteases rather than only one enzyme.',
+      hooks: ['e1', 'e2', 'e3', 'e4', 'e5'],
+      risk: '"acidic, gastric-like" 太软。给出具体条件才像会做实验的人：SGF ≈ pepsin 3.2 g/L、NaCl 2 g/L、HCl 调 pH 1.2–2.0，37 °C；SIF ≈ pancreatin 10 g/L、磷酸钾缓冲、pH 6.8，37 °C。这两组是 USP 的标准配方，报得出来就是硬通货。'
+    },
+    {
+      id: 'p13',
+      label: '4. FACS selection.',
+      text: 'After the challenge, the cells would be stained again and sorted according to the c-Myc/HA ratio. Cells with a high ratio should retain more of the distal construct relative to their original display level.',
+      hooks: ['f3', 'f4', 'f5', 'f6', 'f7', 'f8'],
+      risk: '★ "stained again" 埋了一个大坑：**抗体本身是蛋白**。如果没把蛋白酶彻底灭活/洗掉就加抗体，抗体会被切碎，你测到的信号跟 linker 无关。灭活方式要能说：pepsin 升 pH 到 ≥7（>8 不可逆失活）；胰酶加 AEBSF 或大豆胰蛋白酶抑制剂，再冰上冷洗。考官问到这一点你答得上，等于救回一整段。'
+    },
+    {
+      id: 'p14',
+      label: '5. Iterate and sequence.',
+      text: 'The selection would be repeated for two or three rounds, with the protease challenge becoming more stringent between rounds. The sorted pools could then be analysed by deep sequencing to identify linker sequences that become enriched during selection. The strongest candidates would be tested individually for full-length display and antigen accessibility, confirming that the increased c-Myc signal corresponds to better retention rather than simply altered antibody binding.',
+      hooks: ['g1', 'g2', 'g3', 'g4', 'i1'],
+      risk: '"become enriched" 相对于什么？你必须有 **round 0（未筛的诱导文库）** 作基线，否则富集无从谈起。这一点原文没写，是可以被扣住的空白——主动补上。'
+    },
+    {
+      id: 'p15',
+      label: 'Non-canonical amino acids.',
+      text: 'Once a resistant linker had been identified, a further version of the construct could be made using an amber codon and an orthogonal Methanocaldococcus jannaschii TyrRS/tRNA pair to incorporate p-benzoyl-L-phenylalanine (pBpa) [3]. After UV irradiation, pBpa could potentially form a covalent crosslink between the displayed module and the nearby scaffold. This would provide a second way of retaining the antigen after proteolysis. The efficiency of amber suppression and crosslinking in S. cerevisiae would have to be determined experimentally, so I would treat this as a follow-up rather than part of the main selection.',
+      hooks: ['h1', 'h2', 'h3', 'h4', 'h5', 'j3'],
+      risk: '★★ 全篇唯一可能是**事实性错误**的地方。M. jannaschii TyrRS/tRNA 对是在 **E. coli** 里正交的（这正是你引的 Chin 2002 做的事）。在 **S. cerevisiae** 里，教科书级的正交对是 **E. coli TyrRS / tRNA^Tyr_CUA**（Chin et al., Science 2003）——因为正交性是相对宿主翻译机器而言的，换宿主就要换对。你最后那句 hedge（"efficiency in S. cerevisiae would have to be determined"）能挡一部分，但挡不住 "which pair, in which host" 这个直球。见 h2，有现成的接话稿。'
+    }
+  ]
+},
+
+/* ──────────────────────────── Possible Problems ───────────────────────── */
+{
+  id: 'p-problems',
+  section: 'Possible Problems',
+  cn: '可能的问题',
+  paras: [
+    {
+      id: 'p16',
+      label: '1. Protease resistance could reduce antigen accessibility.',
+      text: 'A very short or rigid linker might protect itself from cleavage by keeping the displayed protein close to the cell wall. Such variants could score well in the FACS selection but be less useful for antigen delivery. I would therefore test selected clones with an antibody against the displayed antigen and exclude variants with strongly reduced accessibility.',
+      hooks: ['i1'],
+      risk: '这是三个 problem 里写得最好的一个：识别了 selection 和 objective 的错位（你选的是"不被切"，你要的是"抗原露得出来"）。口试可以直接说这是 a mismatch between what I select for and what I actually want。'
+    },
+    {
+      id: 'p17',
+      label: '2. Selection could act on the yeast cell rather than the linker.',
+      text: 'The acidic treatment may affect the whole cell, so a variant with a generally more resistant cell wall could have an advantage even if its linker is not particularly good. A reference strain with a fixed linker and a different fluorescent marker could be included to monitor general cell survival during the selection.',
+      hooks: ['i2'],
+      risk: '"a different fluorescent marker" 太笼统。要能具体到：一株带固定 linker、组成型表达 mCherry 的 spike-in reference，按已知比例掺进文库，全程跟着走；每一轮测它占的比例和它自己的 c-Myc/HA。这样它同时当 survival control 和 ratio 的内参。说得出这个设计，这题就满分。'
+    },
+    {
+      id: 'p18',
+      label: '3. The library may not contain sufficiently resistant variants.',
+      text: 'If almost all variants are lost during the first challenge, this could mean that the library is too small or that the selection conditions are too severe. I would first test a range of protease concentrations or incubation times on the initial library and choose conditions that leave a measurable fraction of cells for further selection.',
+      hooks: ['e5', 'i3'],
+      risk: '"a measurable fraction" —— 考官会问 how much。给个数：一般把第一轮压到剩 0.1–1% 的阳性率，既有选择压又不至于把多样性一次杀光。这跟你自己 expression sort 第 1–2 轮取 0.8–1.2% 是同一个量级，可以直接引用自己的经验。'
+    }
+  ]
+},
+
+/* ────────────────────────────── References ────────────────────────────── */
+{
+  id: 'p-refs',
+  section: 'References',
+  cn: '文献',
+  paras: [
+    {
+      id: 'r1',
+      text: '[1] Boder ET, Wittrup KD. Yeast surface display for screening combinatorial polypeptide libraries. Nat Biotechnol 1997;15(6):553–557.',
+      hooks: ['j1'],
+      risk: '奠基文献。要能一句话说清它做了什么：把 Aga2 融合展示 + FACS 定量分选合成一套系统，并证明可以从文库里筛出亲和力提高的变体。'
+    },
+    {
+      id: 'r2',
+      text: '[2] Chao G, Lau WL, Hackel BJ, Sazinsky SL, Lippow SM, Wittrup KD. Isolating and engineering human antibodies using yeast surface display. Nat Protoc 2006;1(2):755–768.',
+      hooks: ['j2', 'b3'],
+      risk: '这是 protocol 论文，不是发现。你引它是为了 **HA/c-Myc 双 tag 的位置**——这正是你读数的依据，引得对。'
+    },
+    {
+      id: 'r3',
+      text: '[3] Chin JW, Martin AB, King DS, Wang L, Schultz PG. Addition of a photocrosslinking amino acid to the genetic code of Escherichia coli. Proc Natl Acad Sci USA 2002;99(17):11020–11024.',
+      hooks: ['j3', 'h2'],
+      risk: '★ 标题里写着 **Escherichia coli**。你却把它用在 S. cerevisiae 上。考官只要念一遍标题，这个 gap 就摆在桌面上了。h2 里有承认并转成加分的接法。'
+    }
+  ]
+}
+];
+
+
+/* ══════════ data/questions.js ══════════ */
+/* =========================================================================
+   PESB 口试 · 题库
+   针对 20260824-PESB_Assignment2_FINAL.docx 的答辩演练。
+
+   每题的字段：
+     q / qcn   考官的问法（英文口试，中文只是让你确认自己理解对了）
+     beats     说话的顺序。不是知识点清单，是"先说什么再说什么"。
+     script    可以直接背下来说出口的英文。短，因为口试没人听得下长句。
+     cn        中文讲透——为什么是这个答案，机制在哪里。
+     followups 考官顺着往下挖的第二刀、第三刀。
+     trap      这题的踩雷点。答错的人通常错在这里。
+     lab       和你自己真做过的实验对上（引 techniques_handbook.md 的技术号）。
+
+   level: core  = 必被问，答不出直接失分
+          deep  = 深追问，答得出就拉开差距
+          killer= 阴招/事实性硬伤，专门练怎么接
+   ========================================================================= */
+
+window.ORAL = window.ORAL || {};
+
+window.ORAL.groups = [
+  { id: 'A', name: 'Framing',     cn: '开场与选题',   icon: '🎯' },
+  { id: 'B', name: 'The system',  cn: '展示系统',     icon: '🧬' },
+  { id: 'C', name: 'Why evolve',  cn: '为什么定向进化', icon: '🔀' },
+  { id: 'D', name: 'Library',     cn: '文库构建',     icon: '📚' },
+  { id: 'E', name: 'Proteases',   cn: '蛋白酶挑战',   icon: '✂️' },
+  { id: 'F', name: 'Readout',     cn: '读数与分选',   icon: '📊' },
+  { id: 'G', name: 'Iteration',   cn: '迭代与测序',   icon: '🔁' },
+  { id: 'H', name: 'ncAA / pBpa', cn: '非天然氨基酸', icon: '💡' },
+  { id: 'I', name: 'Controls',    cn: '对照与失败',   icon: '⚠️' },
+  { id: 'J', name: 'Big picture', cn: '大局与文献',   icon: '🌍' }
+];
+
+window.ORAL.questions = [
+
+/* ═══════════════════════════ A · 开场与选题 ═══════════════════════════ */
+{
+  id: 'a1', group: 'A', level: 'core',
+  q: 'In one minute — what did you propose, and why?',
+  qcn: '一分钟，讲讲你提了个什么，为什么。',
+  beats: [
+    '一句话说清问题：酵母口服递送，抗原会在肠胃里被蛋白酶从表面切掉',
+    '一句话说清靶点：切的是 linker，linker 是可以随便改的那一小段',
+    '一句话说清为什么不理性设计：几种蛋白酶偏好不同又部分重叠，没法一次设计对',
+    '一句话说清方案：NNK 随机化 → 蛋白酶挑战 → 按 c-Myc/HA ratio 分选',
+    '一句话收窄 scope：终点是 linker，不是免疫原性'
+  ],
+  script: 'Yeast is a good oral vaccine chassis — cheap, particulate, no cold chain. But the displayed antigen sits on a flexible linker, and flexible peptides are exactly what proteases like. Pepsin in the stomach, then pancreatic proteases in the gut, can cut the antigen off and leave you with an intact particle carrying nothing. The linker is the right target because you can change it without touching the antigen. I would not design it rationally — the enzymes have different, partly overlapping preferences — so I randomise four to five positions with NNK, run the library through a gastric-then-intestinal protease challenge, and sort on the c-Myc to HA ratio, because c-Myc is distal and HA is proximal. My endpoint is a linker that survives a defined challenge, not an immune response — that would be a separate project.',
+  cn: '这段是开场白，一定要练到不看稿。评分里 discussion / 组织能力那部分，考官在你开口的前 30 秒就打完了。\n\n结构上你走的是标准的工程叙事：**问题 → 靶点 → 为什么这个手段 → 读数 → scope**。最后那句收窄 scope 特别重要，它主动把"你怎么证明能激发免疫"这条线堵掉了，考官再问就是他自己越界。',
+  followups: [
+    { q: 'Why is this a protein engineering problem and not a formulation problem?', a: '因为包衣（formulation）能挡住胃，挡不住小肠——颗粒到达小肠时包衣按设计就该溶了，胰酶照样接触抗原。要解决第二段，只能改被切的那条序列本身。' }
+  ],
+  trap: '别一上来就讲 NNK 和 FACS。考官先要知道你在解决什么问题。技术细节留给他问。',
+  lab: null
+},
+{
+  id: 'a2', group: 'A', level: 'core',
+  q: 'Why yeast? Why not a purified subunit protein, or an mRNA-LNP?',
+  qcn: '为什么用酵母？纯化的亚单位蛋白、或者 mRNA-LNP 不行吗？',
+  beats: [
+    '口服这个前提排除了大部分方案',
+    '酵母便宜、能冻干、不要冷链',
+    '酵母本身是颗粒，颗粒才进得了 M cell',
+    '酵母细胞壁自带佐剂（β-glucan → Dectin-1）',
+    '而且展示系统是现成的'
+  ],
+  script: 'The constraint is oral delivery. A purified subunit needs a cold chain and an adjuvant, and it is degraded in the gut. An mRNA-LNP is not an oral format at all. Yeast solves several problems at once: it is fermented cheaply, it can be freeze-dried and shipped without refrigeration, it is naturally particulate so it can be taken up by M cells and dendritic cells in Peyer\'s patches, and the cell wall β-1,3-glucan is a Dectin-1 ligand, so the chassis is its own adjuvant. And Aga1p/Aga2p display is a mature, well-characterised system — I am not inventing the display, only the linker.',
+  cn: '这题真正在考的是：你知不知道 "口服" 这个约束条件排除了什么。\n\n**β-1,3-glucan → Dectin-1** 是酵母口服疫苗最硬的一个卖点，你原文里只写了 "naturally particulate"，没展开。口试补上这一句，等于把 "为什么是酵母而不是随便什么颗粒" 答到了受体层面。\n\nM cell 是肠道 Peyer\'s patch 表面的特化上皮细胞，专门做 transcytosis 把腔内颗粒送给下面的免疫细胞——这是口服疫苗进入免疫系统的门。',
+  followups: [
+    { q: 'Is S. cerevisiae safe to eat?', a: 'GRAS（Generally Recognised As Safe）——面包和啤酒酵母，人类摄入史极长。这也是它比大多数活载体（沙门氏菌、李斯特菌减毒株）在监管上省事得多的原因。' },
+    { q: 'Does the antigen have to be on the surface at all? Why not just express it inside?', a: '可以，胞内表达也有人做（酵母被吞噬后裂解释放）。但表面展示的好处是抗原以天然构象暴露，能被 B 细胞受体直接识别成构象表位；胞内的更偏向 T 细胞表位。而且只有表面展示才给得出 FACS 可读的表型——这是你整个筛选成立的前提。' }
+  ],
+  trap: '别说 "酵母是真核所以折叠好" 就完了——那是你 RBD 课题的理由，不是口服疫苗的理由。这题的关键词是**口服**。',
+  lab: '技术 5B。你自己每天在做 AGA2-AGA1 展示，这个系统你比大多数人熟。'
+},
+{
+  id: 'a3', group: 'A', level: 'core',
+  q: 'Why engineer the linker, and not the antigen or the anchor?',
+  qcn: '为什么改 linker，不改抗原、不改锚定？',
+  beats: [
+    '抗原不能动——动了表位就变了，整个疫苗的意义没了',
+    '锚定（Aga1/Aga2 + GPI）动了会破坏展示本身',
+    'linker 是唯一一段"改了不影响功能"的序列',
+    '而且它短——短意味着文库做得完'
+  ],
+  script: 'The antigen is the one thing I must not change: its epitopes are the product. The anchor — Aga2p, the disulfides to Aga1p, the GPI attachment — is what holds everything on, and mutating it risks losing display altogether. The linker is the only part of the construct whose sequence is essentially arbitrary: it exists to provide spacing and flexibility, not to carry information. That makes it a free variable. It is also short, which matters practically — four or five randomised positions gives a library I can actually cover, whereas randomising the antigen would not.',
+  cn: '这题考的是 **靶点选择的判断力**，不是知识。\n\n关键词是 "free variable"：构建体里每一段都有功能约束，只有 linker 的序列是任意的（它的功能是"有长度、有柔性"，不是"是这串氨基酸"）。这就是它可以被随机化的根本原因。\n\n再加一层：短 → 文库小 → 覆盖得到。这是把生物学理由和实践可行性接在一起，考官爱听。',
+  followups: [
+    { q: 'Could you have made the antigen itself protease-resistant?', a: '理论上可以做 consensus design 或者引入二硫键提高稳定性，但抗原的每一次突变都在赌表位不受影响——而你恰恰是要保住表位。风险回报比完全不对。' }
+  ],
+  trap: '不要说 "linker 不重要"。linker 很重要，它保证抗原能露出来、能自由摆动——它只是**序列**不重要。这两件事差别很大，i1 那题会回来咬你。',
+  lab: null
+},
+{
+  id: 'a4', group: 'A', level: 'deep',
+  q: 'Describe precisely the failure mode you are trying to prevent.',
+  qcn: '你到底在防止什么样的失败？说具体。',
+  beats: [
+    '酵母细胞本身活下来了',
+    '但抗原被从表面切走了',
+    '结果是一个完好的、空的颗粒',
+    '而且这个失败**看不见**——你测细胞存活率会以为一切正常'
+  ],
+  script: 'The failure is silent. The yeast cell wall is tough — the particle survives the stomach essentially intact. What does not survive is the peptide bond in the linker. So you deliver a fully intact particle that has lost its antigen somewhere between the stomach and the ileum. And if you assay cell viability or particle count, everything looks fine. That is what makes it worth engineering against: the readout you would naturally reach for does not report the failure.',
+  cn: '这题答好了很出彩，因为它显示你想过 **失败的可观测性**。\n\n"silent failure" 这个说法值得记住：细胞存活 ≠ 抗原存在。你日常做展示的人对这个特别有体会——展示量低和细胞状态差是两件事，要分开测。\n\n对应的检测启示：验证配方稳定性时必须测**表面抗原**（抗体染色 / 流式），不能只测 CFU 或者 OD。',
+  followups: [
+    { q: 'How would you measure it in a real formulation study?', a: '把冻干制剂过体外消化模型（SGF→SIF），每个时间点取样、染 c-Myc 和 HA、上流式，画 ratio 随时间的曲线。终点是 "半衰期"，不是 "有/无"。' }
+  ],
+  trap: null,
+  lab: '技术 7（CytoFLEX 分析型流式）。你验证单克隆展示量用的就是这套逻辑：分析不分选，读群体的荧光分布。'
+},
+{
+  id: 'a5', group: 'A', level: 'deep',
+  q: 'Is this an oral vaccine project or a protein engineering project? Be honest.',
+  qcn: '这到底是疫苗课题还是蛋白工程课题？说实话。',
+  beats: [
+    '是蛋白工程课题',
+    '口服递送是 motivation，不是 endpoint',
+    '终点是一条能扛住定义好的蛋白酶挑战的 linker',
+    '免疫原性是完全独立的下一步'
+  ],
+  script: 'It is a protein engineering project. Oral delivery is the motivation — it is why the protease challenge is the relevant selection pressure rather than, say, thermal stability — but it is not the endpoint. The endpoint I can actually reach is a linker sequence that keeps the distal part of the construct attached through a defined gastric-then-intestinal challenge. Whether that translates into a protective immune response is a separate question requiring animals, and I deliberately did not claim it.',
+  cn: '**主动说出来。** 这句话在原文第 9 段已经写了，口试开场就该复述一遍。\n\n为什么重要：一旦考官认为你在声称做疫苗，他就有权问你 IgA 应答、剂量、动物模型、佐剂——那些你都没准备。你先把 scope 钉死，这些问题就全部变成 "future work"，回答起来毫无压力。\n\n这是答辩里最有性价比的一个动作：**用限定 scope 换掉一整条追问线**。',
+  followups: [
+    { q: 'So what would convince you the project succeeded?', a: '一条 linker，在 pepsin/pH 2 三十分钟加 pancreatin/pH 6.8 一小时之后，c-Myc/HA ratio 显著高于野生型 (G4S) linker，并且用抗-抗原抗体验证过表位仍然可及。两个条件都要满足。' }
+  ],
+  trap: null,
+  lab: null
+},
+
+/* ═══════════════════════════ B · 展示系统 ═══════════════════════════ */
+{
+  id: 'b1', group: 'B', level: 'core',
+  q: 'Draw the construct for me. From the cell wall outwards, what is in what order?',
+  qcn: '把构建体画出来。从细胞壁往外，顺序是什么？',
+  beats: [
+    '细胞壁 —(GPI 锚)— Aga1p',
+    'Aga1p —(两对二硫键)— Aga2p',
+    'Aga2p — linker — HA tag — 【你随机化的 linker】— 抗原 — c-Myc — 终止',
+    '强调：HA 近端、c-Myc 远端，这就是读数的几何基础'
+  ],
+  script: 'From the wall outwards: the cell wall, then Aga1p, which is attached through a GPI anchor. Aga1p is joined to Aga2p by two disulfide bonds. Aga2p is fused at its C-terminus to the display cassette: a short linker, then the HA tag, then the linker I am randomising, then the antigen, then the c-Myc tag at the very C-terminus. So HA is proximal — close to the wall — and c-Myc is distal. Everything in my readout follows from that geometry.',
+  cn: '这题你一定要能**边说边画**。考官给纸笔就画，不给就用手比划。\n\n注意一个原文没写清、但你必须讲清的点：pCTCON2 里 Aga2 和插入片段之间**本来就有一段 linker 加 HA tag**。你随机化的那一段必须在 **HA 之后、抗原之前**——如果你改的是 Aga2 和 HA 之间那段，切断以后 HA 和 c-Myc 会一起掉，细胞变双阴性，你的 ratio 读数就废了（见 f2）。\n\n**GPI 锚**：glycosylphosphatidylinositol，翻译后加在蛋白 C 端的糖脂锚，在酵母里最终被转到细胞壁的 β-1,6-glucan 上，所以 Aga1p 是共价固定在壁上的，不是插在膜里。',
+  followups: [
+    { q: 'Which linker exactly are you randomising?', a: 'HA 和抗原之间那一段。理由就是上面说的：只有切在 HA 和 c-Myc 之间，才会产生"HA 保留、c-Myc 丢失"这个可读的信号。' },
+    { q: 'What is the wild-type linker sequence?', a: '典型是 (G4S)n —— Gly-Gly-Gly-Gly-Ser 重复。全部由最小侧链的 Gly 和 Ser 组成，所以极柔性、无二级结构倾向。也正因为极柔性，它对蛋白酶是理想底物。' }
+  ],
+  trap: '不要把 Aga1p 说成"插在膜上"。它是 GPI 锚定后转移到**细胞壁**上的，共价连在葡聚糖上。说成膜蛋白是常见错误。',
+  lab: '技术 5B.2。这段你手册里已经背过：AGA1 GPI 锚在壁上，AGA1–AGA2 之间两对二硫键。'
+},
+{
+  id: 'b2', group: 'B', level: 'core',
+  q: 'How is Aga2p held onto Aga1p? What holds Aga1p on the wall?',
+  qcn: 'Aga2p 靠什么连在 Aga1p 上？Aga1p 又靠什么留在壁上？',
+  beats: [
+    'Aga2p ← 两对二硫键 → Aga1p',
+    'Aga1p ← GPI 锚 → 细胞壁 β-1,6-glucan（共价）',
+    '两者都是共价的，所以整条链很结实',
+    '弱点不在锚定，在中间那段肽'
+  ],
+  script: 'Two disulfide bonds link Aga2p to Aga1p, and Aga1p is held to the wall through a GPI anchor that is transferred onto cell wall glucan — so it is covalently attached, not membrane-inserted. Both junctions are covalent. That is actually the point of my proposal: the anchoring chemistry is strong, so the weak link is not the anchor, it is the ordinary peptide bond in the flexible linker. A protease does not care how good your anchor is if it can cut upstream of the antigen.',
+  cn: '最后那句是这题的题眼，**一定要说出来**：锚定是共价的、很结实；失效点在肽键。这直接论证了为什么 linker 才是要工程化的对象（回到 a3）。\n\n补一个可能被追问的：既然是二硫键，还原剂（比如肠腔里的谷胱甘肽、或者食物里的还原性物质）会不会把 Aga2 整个还原下来？这是一个真实的替代失效路径，值得承认——而且它会让细胞变**双阴性**，和近端切割一样，从 gate 里消失而不是得高分。',
+  followups: [
+    { q: 'Could reducing conditions in the gut release Aga2p entirely?', a: '有可能。小肠腔里存在还原性环境和谷胱甘肽。但注意它的表现和"近端切割"一样：HA 和 c-Myc 同时丢失 → 双阴性 → 掉出 gate。它不会污染你的高 ratio 群，只会降低回收率。要区分的话，可以做一个 +DTT 不加蛋白酶的对照。' }
+  ],
+  trap: null,
+  lab: '技术 5B.2。'
+},
+{
+  id: 'b3', group: 'B', level: 'core',
+  q: 'Where are the HA and c-Myc tags, and why does their position matter?',
+  qcn: 'HA 和 c-Myc 分别在哪，位置为什么重要？',
+  beats: [
+    'HA 在 N 端侧、靠近 Aga2p —— proximal',
+    'c-Myc 在 C 端最末 —— distal',
+    '任何在两者之间的切割 → c-Myc 走、HA 留',
+    '所以 c-Myc/HA 是一个"远端还在不在"的空间读数'
+  ],
+  script: 'In the pCTCON2 design, HA sits between Aga2p and the insert, and c-Myc is at the extreme C-terminus, after the insert. So they bracket everything I care about. Any cleavage between them removes the c-Myc epitope from the cell while leaving HA attached. That converts a chemical event — one peptide bond broken — into a two-colour spatial readout on a flow cytometer. HA is my internal reference for how much construct was there to begin with; c-Myc is the survivor.',
+  cn: '"bracket" 这个词很好用——两个 tag 把感兴趣的区域夹在中间。\n\n序列本身值得记住：\n- **HA tag** = YPYDVPDYA（来自流感血凝素）\n- **c-Myc tag** = EQKLISEEDL（来自人 c-Myc，经典抗体 9E10）\n\n能报出序列是加分项，但更重要的是能说清 **为什么这个几何让化学事件变成可测信号**。这是整篇作业最漂亮的一步设计。',
+  followups: [
+    { q: 'Which antibodies?', a: 'c-Myc 常用 9E10（鼠单抗）或鸡多抗；HA 用 12CA5 或市售抗-HA。两个一抗必须来自不同物种，才能用不同种属特异的二抗分开检测——不然两个通道会互相串。' },
+    { q: 'Can you use directly conjugated primaries?', a: '可以，而且更好：省一步、没有二抗交叉、染色时间短。缺点是没有二抗放大，信号弱一些。你的实验里 SpyCatcher-FITC 走的就是"直接标记"路线。' }
+  ],
+  trap: '两个一抗如果来自同一物种，二抗会同时认两个——通道就废了。考官可能会顺手问一句，别掉进去。',
+  lab: '技术 5B.4 / 技术 1。你的 expression sort 用 SpyTag/SpyCatcher-FITC 做展示量报告，作用和这里的 HA 完全等价：**归一化展示量的内参**。这是一个很强的类比，可以主动提。'
+},
+{
+  id: 'b4', group: 'B', level: 'core',
+  q: 'What drives expression? How do you induce, and what represses it?',
+  qcn: '什么启动子？怎么诱导，什么抑制？',
+  beats: [
+    'GAL1 启动子',
+    '半乳糖诱导、葡萄糖抑制（分解代谢物阻遏）',
+    'SDCAA（葡萄糖）扩增文库、不展示；1/9 或 SGCAA（半乳糖）诱导展示',
+    '低温诱导（20 °C，48 h）利于二硫键正确折叠',
+    '和 lac 操纵子逻辑镜像'
+  ],
+  script: 'The cassette is under the GAL1 promoter — induced by galactose, repressed by glucose through catabolite repression. So I grow and amplify the library in glucose medium, where nothing is displayed and the cells are just dividing, and then switch to galactose medium to induce. Induction at 20 °C for around 48 hours rather than 30 °C, because slower folding gives better disulfide formation and better surface display. It is the mirror image of the lac operon: preferred carbon source present, gene off; only the secondary sugar switches it on.',
+  cn: '这题是 PESB 高频，因为它把**调控**和**实操**接在一起。\n\n为什么把生长和展示分开很重要：展示是有代价的（分泌途径负担、错误折叠的 UPR 压力）。如果一直诱导，展示得差的细胞反而长得快，文库在扩增阶段就已经被扭曲了。用葡萄糖压住表达来扩增，就是保住文库多样性。\n\n**和 lac 对照**（考官很爱问）：\n- lac：乳糖（真正的诱导物是 allolactose）诱导，葡萄糖通过 cAMP-CAP 降低而间接抑制\n- GAL：半乳糖诱导（Gal3/Gal80/Gal4 开关），葡萄糖抑制\n- 共同逻辑：有首选碳源就关，没有才开',
+  followups: [
+    { q: 'Why 20 °C and not 30 °C?', a: '低温减慢翻译和折叠速率，给内质网里的 PDI（蛋白二硫键异构酶）和分子伴侣更多时间把二硫键配对正确。30 °C 展示量往往更低，因为错误折叠的被 ERAD 降解掉了。' },
+    { q: 'Does the promoter leak?', a: '会。GAL1 在葡萄糖里有低水平泄漏。对你的方案影响不大（扩增阶段少量展示无所谓），但如果展示的蛋白有毒性，泄漏就会在扩增期造成选择压。' }
+  ],
+  trap: '别说 "半乳糖是诱导物所以加半乳糖" 就完事。要能说出**为什么要把生长期和诱导期分开**——那才是设计层面的理由。',
+  lab: '技术 5B.3。你自己的诱导条件就是 1/9 培养基、20 °C、48 h、deep well 40 µL/1 mL。直接报出来。'
+},
+{
+  id: 'b5', group: 'B', level: 'deep',
+  q: 'Why yeast display rather than phage display?',
+  qcn: '为什么用酵母展示不用噬菌体展示？',
+  beats: [
+    '抗原是折叠的真核蛋白：要二硫键、可能要糖基化',
+    '噬菌体在大肠杆菌里做，原核没有这套折叠机器',
+    '酵母是真核，有 ER、PDI、糖基转移酶',
+    '而且 FACS 给你定量 + 活细胞分选；噬菌体只能 panning（二分，不定量）',
+    '代价：酵母文库容量小两三个数量级'
+  ],
+  script: 'Two reasons. First, folding: the antigen is a eukaryotic protein that needs disulfides and probably glycosylation, and phage display is an E. coli system — the periplasm cannot reliably fold that. Yeast has an ER with PDI and the glycosylation machinery. Second, the readout: phage panning is a binary bind-or-wash step, whereas FACS gives me a quantitative, per-cell, two-colour measurement, which is exactly what my ratio selection needs. The cost is library size — yeast tops out around 10⁷ to 10⁸ transformants, phage reaches 10¹⁰ to 10¹¹. For a five-position linker library that trade is fine.',
+  cn: '最后那句 **主动认代价** 是这题的分水岭。只说酵母好的人拿一般分；说 "酵母差在文库容量，但我的文库小所以不吃亏" 的人拿高分。\n\n而且这直接连到 d4：文库容量正好是你这个设计的临界约束——5 个 NNK 位点在 DNA 层面 3.4×10⁷，已经顶到酵母转化的天花板了。你能把 b5 和 d4 串起来讲，考官会看出你真的算过。',
+  followups: [
+    { q: 'What about ribosome or mRNA display?', a: '文库容量最大（10¹²–10¹⁴，无细胞、不受转化效率限制），但同样缺真核折叠环境，而且没有细胞可以分选——你的 ratio 读数完全做不了。' },
+    { q: 'Mammalian display?', a: '折叠和糖基化最接近天然，但文库容量更小、成本高、周期长。对你这个只有 5 个位点的 linker 文库是杀鸡用牛刀。' }
+  ],
+  trap: null,
+  lab: '技术 5B.5，你手册里标了"口试必背"。'
+},
+{
+  id: 'b6', group: 'B', level: 'core',
+  q: 'What is genotype–phenotype linkage, and why does your scheme need it?',
+  qcn: '什么是基因型-表型偶联？你的方案为什么需要它？',
+  beats: [
+    '表型（linker 抗不抗切）在细胞表面',
+    '基因型（编码它的序列）在同一个细胞里的质粒上',
+    '细胞是把两者绑在一起的物理容器',
+    '所以按表型分选细胞 = 同时富集了基因型',
+    '断了这个连接，筛出来的东西就没法测序'
+  ],
+  script: 'Each yeast cell displays one linker variant on its surface and carries the plasmid encoding that same variant inside. The cell physically ties the phenotype — how much c-Myc survives the protease — to the genotype. So when FACS sorts on the ratio, it is also sorting the DNA, and I can recover plasmids from the sorted pool and sequence them. Without that linkage a selection is useless: you would find a resistant molecule and have no way to know what it was.',
+  cn: '这是展示技术的**全部意义**，一句话说不清就等于没懂这门课。\n\n可以补一个反例来显示你理解得深：如果你把 linker 库做成游离肽在管子里筛，你能测出哪些肽抗切，但你**分不出是哪一条**——除非一条条合成、一条条测。展示技术做的就是把"筛"和"识别"合并成一步。\n\n再补一层：这也是为什么文库不能有"一个细胞多个质粒"。共转化多质粒会打破 1:1 偶联，一个细胞的表型是几种 linker 的混合，测序就归不了因。',
+  followups: [
+    { q: 'What breaks the linkage?', a: '一个细胞里进了多个不同质粒。控制办法是电转时降低 DNA 量、保持转化子远少于泊松单拷贝的界限，或者用 CEN 单拷贝载体而不是 2µ 高拷贝。' }
+  ],
+  trap: null,
+  lab: '技术 5B.1。你的 RBD 文库靠的就是这个：FACS 分出结合强的细胞 → 提质粒 → Sanger 测序 → 知道是哪个重组体。'
+},
+
+/* ═══════════════════════ C · 为什么定向进化 ═══════════════════════ */
+{
+  id: 'c1', group: 'C', level: 'core',
+  q: 'Why not just design a protease-resistant linker rationally?',
+  qcn: '为什么不直接理性设计一条抗蛋白酶的 linker？',
+  beats: [
+    '不是一种酶，是一组酶',
+    '偏好不同又部分重叠：pepsin 和 chymotrypsin 都爱芳香族；trypsin 只认 Lys/Arg；elastase 认小残基',
+    '躲开一种可能撞上另一种',
+    '而且不只有序列，还有构象可及性——这个更难预测',
+    '所以让选择压去解，别让预测去解'
+  ],
+  script: 'Because the target is not one enzyme, it is a panel with partly overlapping specificities. Pepsin prefers hydrophobic and aromatic residues; chymotrypsin also cuts after aromatics; trypsin cuts only after lysine and arginine; elastase prefers small residues like alanine and glycine. If I design a sequence to avoid trypsin sites by removing every K and R, I have not touched what pepsin or chymotrypsin will do. And cleavage is not just about the P1 residue — it depends on whether that bond can be presented to the active site in an extended conformation, which is much harder to predict. Selection evaluates all of that simultaneously, for free.',
+  cn: '这是全篇最强的一条论证，要练到能流利说出四种酶的偏好。\n\n**最后一层最值钱**：即使你把序列偏好全躲开，能不能被切还取决于**构象可及性**——蛋白酶的活性位点是一条 cleft，底物必须以伸展构象嵌进去。一段刚性的、或者贴着细胞壁被遮挡的 linker，就算含 Lys 也可能切不动。这是 sequence-based 预测根本算不出来的，而选择实验一次就把它测了。\n\n用一句话概括：**理性设计只能优化你会算的那个量；选择优化的是你真正要的那个量。**',
+  followups: [
+    { q: 'Could you use a protease-specificity prediction tool?', a: 'MEROPS 之类的数据库能给你 P1/P1\' 偏好统计，可以用来设计**初始文库的偏置**（比如避开明显的 K/R），但不能用来挑最终序列——它算不了构象和空间遮挡。合理用法是"用预测缩小搜索空间，用选择做最终决定"。' }
+  ],
+  trap: '别只说 "蛋白酶偏好不同"。要举出**具体的酶和具体的残基**，否则这句在考官听来就是套话。',
+  lab: null
+},
+{
+  id: 'c2', group: 'C', level: 'deep',
+  q: 'Your approach 1 was to stiffen the linker with prolines. Why would proline help, mechanistically?',
+  qcn: '你的方案一说加脯氨酸。从机制上，脯氨酸为什么有用？',
+  beats: [
+    '第一层：Pro 的侧链环回主链氮，限制 φ 角，主链刚性大',
+    '蛋白酶要求底物以伸展构象进入 cleft，刚性链进不去',
+    '第二层（更硬）：多数丝氨酸蛋白酶不切 X-Pro 键',
+    '典型：trypsin 遇 Lys-Pro / Arg-Pro 不切',
+    '代价：刚性也降低抗原的可及性和摆动自由度'
+  ],
+  script: 'Two levels. Structurally, proline\'s side chain cyclises back onto the backbone nitrogen, so it constrains the backbone and removes the amide hydrogen. A protease active site is a groove that needs the substrate in an extended conformation, hydrogen-bonded like a β-strand, and a proline-rich segment cannot adopt that easily. More specifically, most serine proteases will not cleave an X-Pro bond — trypsin, for example, skips Lys-Pro and Arg-Pro. So prolines both stiffen and directly block. The problem is that the same rigidity is what gives the antigen its freedom to move and be recognised, so I would be trading the property I want to keep against the property I want to gain.',
+  cn: '第二层（X-Pro 不切）是把这题从"泛泛而谈"拉到"分子层面"的关键。丝氨酸蛋白酶的催化需要底物主链在 S1\' 位形成特定的氢键网络，Pro 没有 N–H，且环状侧链造成位阻，所以 P1\' 是 Pro 的键基本不被切。\n\n**收尾一定要说 trade-off**：Pro 化 linker 会同时降低柔性 → 抗原摆不开 → 可及性下降。这正好就是你原文 Possible Problem #1 的内容（i1），能在这里就把两处串起来，说明你自己的文档是一个整体。\n\n顺带：这也解释了为什么你**不排除** Pro 出现在筛选结果里——如果选择真的挑出富含 Pro 的 linker，那说明抗性确实赢了，但你必须紧接着做可及性验证。',
+  followups: [
+    { q: 'So if selection returns proline-rich linkers, is that a success or a failure?', a: '是个警报，不是结论。说明选择压确实在起作用（找到了抗切的解），但也正好落在 Possible Problem #1 预言的那个陷阱上。必须用抗-抗原抗体测可及性，把"抗切但藏起来"的变体剔掉。这就是为什么这个对照是必须的，不是可选的。' }
+  ],
+  trap: null,
+  lab: null
+},
+{
+  id: 'c3', group: 'C', level: 'deep',
+  q: 'Approach 2 was an enteric coating. Why did you reject it?',
+  qcn: '方案二是肠溶包衣。为什么不用？',
+  beats: [
+    '先承认它有效——它对胃是真管用',
+    '但它按设计就是在小肠溶解的',
+    '一旦溶了，胰酶直接接触抗原',
+    '包衣解决第一段，解决不了第二段',
+    '而且这两条其实互补，不是二选一'
+  ],
+  script: 'I did not reject it as useless — an enteric coating genuinely works against gastric acid and pepsin; that is exactly what it is designed for. The problem is that it is designed to dissolve above about pH 5.5, which is the small intestine, which is where the pancreatic proteases are. So the coating protects the particle through stage one and then hands it, unprotected, to stage two. It solves half of my problem. Honestly, the two approaches are complementary rather than alternatives — in a real product I would probably want both: a coating to get past the stomach and a resistant linker to survive the gut.',
+  cn: '这题的正确姿态是 **不要为了选自己的方案而贬低别人的**。考官在测的是你的判断诚实度。\n\n"complementary rather than alternatives" 这句是加分的：显示你能跳出作业里"三选一"的框架，看到真实开发里它们会被叠加使用。\n\n技术细节可以点一句：肠溶包衣是 pH 响应型聚合物（如 Eudragit L/S 系列的甲基丙烯酸共聚物），在酸里质子化不溶，pH 升高后羧基去质子化而溶解。',
+  followups: [
+    { q: 'If both work, why is the linker the better thing to engineer?', a: '因为包衣是配方层面的、可以随时加上去的（工业上是成熟技术）；而 linker 是必须在分子层面解决、并且要花时间做的。先做难的、不可替代的那个。而且改好的 linker 是一次性的，之后每个批次都自带。' }
+  ],
+  trap: null,
+  lab: null
+},
+{
+  id: 'c4', group: 'C', level: 'core',
+  q: 'Directed evolution needs variation, selection, and amplification. Point at each one in your scheme.',
+  qcn: '定向进化要有变异、选择、扩增。在你的方案里各是什么？',
+  beats: [
+    'Variation = NNK 随机化 4–5 个位点，同源重组建库',
+    'Selection = 蛋白酶挑战 + 按 c-Myc/HA ratio 的 FACS 分选',
+    'Amplification = 分选后的细胞在 SDCAA 葡萄糖里长起来（不诱导）',
+    '循环 2–3 轮，每轮加压'
+  ],
+  script: 'Variation is the NNK randomisation of four to five linker positions, assembled by homologous recombination in yeast. Selection is the two-stage protease challenge followed by FACS on the c-Myc to HA ratio — that is where the pressure is applied and where variants are physically separated. Amplification is regrowing the sorted cells in glucose medium, where GAL1 is repressed so they simply divide without the burden of display. Then the cycle repeats with a harsher challenge. The important point is that amplification is a separate phase from selection, deliberately, so that growth rate does not become part of what I am selecting for.',
+  cn: '最后那句是这题真正的深度：**把扩增和选择在时间上分开**，避免生长速率偷偷变成选择压。\n\n这也是为什么 b4 里"葡萄糖扩增 / 半乳糖诱导"的分离设计这么重要——它不只是操作方便，它是保证选择压干净的结构性安排。能把 b4 和 c4 串起来讲，是很强的信号。\n\n如果考官要更严格：真正干净的做法是每轮扩增的代数固定（比如都长到同一 OD、同样时间），这样不同轮之间的生长偏差可比。',
+  followups: [
+    { q: 'Where could growth rate contaminate your selection anyway?', a: '在扩增阶段。如果某个 linker 变体因为分泌负担小而长得快，它会在每一轮扩增里累积优势，看起来像是被"选"出来的。对照办法：测一个 mock-treated（不加蛋白酶但走完所有步骤）的平行文库，测序后把它的频率变化当作生长漂移的基线扣掉（见 g4）。' }
+  ],
+  trap: null,
+  lab: null
+},
+
+/* ═══════════════════════════ D · 文库构建 ═══════════════════════════ */
+{
+  id: 'd1', group: 'D', level: 'core',
+  q: 'What is an NNK codon? Why NNK rather than NNN?',
+  qcn: 'NNK 是什么？为什么不用 NNN？',
+  beats: [
+    'N = A/T/G/C 任一；K = G 或 T',
+    '所以 NNK 有 4×4×2 = 32 个密码子',
+    '32 个密码子编码全部 20 种氨基酸',
+    '只剩一个终止密码子 TAG（TAA 和 TGA 都被排除了）',
+    'NNN 是 64 个密码子、3 个终止子——终止率高一倍、密码子偏倚更严重'
+  ],
+  script: 'N is any of the four bases and K is either G or T, so NNK gives 32 codons instead of 64. Those 32 still encode all twenty amino acids, but only one stop codon survives — TAG, because TAA and TGA both end in A, which K excludes. So NNK halves the stop frequency compared to NNN, from three stops in 64 down to one in 32, and it also flattens the codon bias: with NNN, leucine, serine and arginine get six codons each while methionine and tryptophan get one, a six-fold over-representation. NNK reduces that to at most threefold.',
+  cn: '这题必须答得**精确到数字**，因为它是可算的，考官一听就知道你有没有真懂。\n\n算给自己看：\n- K = G 或 T → 排除所有第三位是 A 或 C 的密码子\n- TAA 第三位 A → 排除；TGA 第三位 A → 排除；TAG 第三位 G → **保留**\n- 所以 32 个密码子里恰好 1 个终止子\n\n**密码子偏倚**这一层是拉分点：NNN 下 Leu/Ser/Arg 各 6 个密码子、Met/Trp 各 1 个 → 6 倍失衡，文库在氨基酸层面是歪的。NNK 下最多 3 个密码子（Leu/Ser/Arg），最少 1 个 → 降到 3 倍。\n\n**NNS**（S = G/C）也是 32 个密码子、也只剩 TAG，和 NNK 基本等价。区别只在偏好哪些同义密码子；实践上 NNK 更常用。',
+  followups: [
+    { q: 'Is there anything better than NNK?', a: '有。**Trimer phosphoramidite（三联体亚磷酰胺）**合成：直接以密码子为单位合成，可以做到 20 种氨基酸等比例、零终止子。缺点是试剂贵得多。还有 **MAX randomisation** 和 **22c-trick**（用 3 条简并引物混合），也能接近等比例且无终止子。能提到这些，说明你知道 NNK 不是终点，只是性价比最高的选择。' },
+    { q: 'Why do you even care about the stop codons?', a: '因为终止子把构建体在 linker 处截断 → 抗原和 c-Myc 全没了 → 细胞是 HA 阳性、c-Myc 阴性。**这恰恰是"被切断"的表型！** 如果不在蛋白酶挑战之前把它们除掉，它们会作为假阳性混进来……不，等一下——它们是 c-Myc 阴性，所以在 ratio 上是低分，会被排除。真正的危害是它们白白占掉 15% 的文库容量。这就是为什么要做 pre-sort（见 d2 的 followup 和 f6）。' }
+  ],
+  trap: '别把 K 说成 "G/C"——那是 S。K = keto = G/T；S = strong = G/C；M = amino = A/C；R = purine = A/G；Y = pyrimidine = C/T。IUPAC 简并码值得花五分钟背一下。',
+  lab: null
+},
+{
+  id: 'd2', group: 'D', level: 'core',
+  q: 'Five NNK positions. How many protein sequences? How many DNA sequences? Do the arithmetic.',
+  qcn: '五个 NNK 位点。蛋白层面多少种？DNA 层面多少种？算给我听。',
+  beats: [
+    '蛋白：20⁵ = 3,200,000 ≈ 3.2×10⁶',
+    'DNA：32⁵ = 33,554,432 ≈ 3.4×10⁷',
+    '两者差 10 倍，因为简并——多个密码子编同一个氨基酸',
+    '含至少一个 TAG 的比例：1 − (31/32)⁵ ≈ 15%',
+    '所以约 85% 是全长的'
+  ],
+  script: 'At the protein level, twenty amino acids at five positions is 20 to the fifth, which is 3.2 million. At the DNA level it is 32 to the fifth, about 34 million — roughly ten times larger, because of codon degeneracy. And the fraction carrying at least one amber stop is one minus 31 over 32 to the fifth, about fifteen percent, so around 85% of the library is full length. I should say that my write-up rounds this to "roughly 10⁶", which is the right order of magnitude at the protein level but slightly low — 3.2 million is the number.',
+  cn: '★ **主动修正自己的数字**，这是这题最重要的动作。原文写 "roughly 10⁶"，真值 3.2×10⁶。差三倍多，量级没错但偏小一档。考官如果先发现，是你没算；你先说出来，是你算过并且知道自己写得粗。后者好太多。\n\n还有一个**排版事故**要提前处理：docx 转出来上标掉了，纸面上印的是 "106"。你要在讲到这里时顺口说一句 "that is ten to the sixth — the superscript did not survive the export"，否则考官会以为你写了"106 种序列"，那就荒谬了。\n\n**为什么 DNA 数比蛋白数重要**：因为你要覆盖的是 DNA 层面的多样性——转化子数量是按 DNA 算的。见 d4。',
+  followups: [
+    { q: 'And for four positions?', a: '蛋白 20⁴ = 160,000；DNA 32⁴ = 1,048,576 ≈ 10⁶；含终止子比例 1−(31/32)⁴ ≈ 12%。四个位点是舒服的——10⁶ 的 DNA 多样性，酵母转化轻松覆盖到 10 倍以上。五个位点就顶到天花板了。' },
+    { q: 'Why is the DNA number the one that matters?', a: '因为转化子是 DNA 分子，不是氨基酸序列。你要保证每一个 DNA 变体都至少进过一个细胞，才谈得上"文库完整"。按蛋白数算会让你低估十倍所需的转化子。' }
+  ],
+  trap: '20⁵ 不是 10⁶。当场算：20²=400，20³=8000，20⁴=160,000，20⁵=3,200,000。练到能秒答。',
+  lab: null
+},
+{
+  id: 'd3', group: 'D', level: 'deep',
+  q: 'How many transformants do you actually need, and how would you know you got them?',
+  qcn: '你到底需要多少转化子？怎么知道拿到了？',
+  beats: [
+    '经验规则：3× 多样性 → 95% 覆盖（泊松）',
+    'DNA 多样性 3.4×10⁷ → 需要 ~10⁸ 转化子',
+    '这已经在酵母电转的极限上',
+    '怎么知道：转化后立刻稀释铺板数 CFU',
+    '如果拿不到 10⁸，就退到 4 个位点'
+  ],
+  script: 'The rule of thumb comes from a Poisson argument: if you sample N times from a library of diversity D, the chance a given variant is missed is e to the minus N over D. At N equal to 3D that is about 5%, so threefold oversampling gives 95% coverage. My DNA diversity is 3.4 × 10⁷, so I want on the order of 10⁸ transformants. That is right at the ceiling of yeast electroporation — an optimised protocol reaches around 10⁹, a routine one more like 10⁷. I would measure it directly: after transformation, plate a dilution series on selective plates and count colonies. If I could only get 10⁷, I would drop to four randomised positions, where the DNA diversity is about 10⁶ and tenfold coverage is comfortable.',
+  cn: '★ 这题是整个文库部分的**制高点**。能把泊松算清楚、并且知道自己的设计正好卡在酵母转化的极限上，是研究生水平的回答。\n\n泊松推导（值得会）：把 N 个转化子随机分配到 D 个变体上，每个变体期望被抽到 λ = N/D 次。P(一次都没抽到) = e^(−λ)。\n- λ = 1 → 漏掉 37%\n- λ = 3 → 漏掉 5%\n- λ = 5 → 漏掉 0.7%\n\n**而且要主动认**：5 个位点是硬撑的。这不是缺陷，这是你写在原文里的那句 "library coverage would be an important practical consideration" 的具体含义——把那句含糊的话兑现成数字。\n\n退路（4 个位点）一定要说出来。有 fallback 的方案才像真做过实验的人写的。',
+  followups: [
+    { q: 'What if you use a smaller alphabet instead of dropping positions?', a: '很好的替代路线。用有偏简并密码子（比如 VNS，或者只允许 Gly/Ser/Pro/Ala/Thr 这类 linker 常见残基）在保持 5 个位点的同时把多样性压下来。代价是你事先假设了答案在哪个子空间里——那就退回了半个理性设计。可以讲成一个明确的 trade-off。' },
+    { q: 'How do you verify library quality beyond counting colonies?', a: '挑 20–30 个未筛的克隆送 Sanger，看：① 随机化位点是不是真的随机（每个位置四种碱基大致均等）；② 有没有母本载体残留（未切完全的环状质粒会给出野生型 linker）；③ 终止子比例是不是接近预期的 15%。这三项对得上，文库才算合格。' }
+  ],
+  trap: '别说 "转化效率越高越好" 就完了。要给出**目标数字**和**测量方法**。CLAUDE.md 里那条 "every threshold needs evidence" 在这里完全适用。',
+  lab: '技术 5（酵母电转）+ 技术 24（同源臂引物）。你自己建 RBD 文库时铺板计数就是干这个。'
+},
+{
+  id: 'd4', group: 'D', level: 'core',
+  q: 'You said "in vivo homologous recombination". Walk me through how you would actually build the library.',
+  qcn: '你写了体内同源重组。具体怎么建库？',
+  beats: [
+    '把展示载体做 whole-plasmid PCR 线性化，切口在 linker 处',
+    '订一条简并寡核苷酸：两端各 ~40 bp 同源臂，中间 (NNK)₅',
+    '两者一起电转进酵母',
+    '酵母自己的 HR 机器把它们拼成完整环状质粒',
+    '不需要连接酶、不需要酶切位点'
+  ],
+  script: 'I linearise the display vector by whole-plasmid PCR so that the cut falls exactly where the linker sits. Then I order a single degenerate oligonucleotide: about forty bases of homology to the vector on each side, with the five NNK codons in the middle. I co-electroporate the linearised vector and the oligo into yeast, and the yeast\'s own recombination machinery joins them into a closed circular plasmid. No ligase, no restriction sites, and — importantly for a library — the diversity is carried by a cheap synthetic oligo rather than by a cloning step that could bottleneck it.',
+  cn: '这题你有**主场优势**——你自己就是这么建 RBD 重组文库的。要让考官知道这一点。\n\n几个能显示实操经验的细节：\n- **同源臂 ~40 bp**：酵母电转的常用长度，短于 30 bp 效率明显下降\n- **whole-plasmid PCR 线性化**：比酶切干净，因为不依赖唯一酶切位点，而且断点位置随你定\n- **线性化必须彻底**：残留的环状母本质粒会直接转化出野生型 linker 的假阳性。所以 PCR 产物要么用 DpnI 消化掉甲基化的模板（技术 4），要么跑胶切胶回收\n\n最后一句 "diversity carried by a cheap oligo" 是设计层面的洞察：文库多样性的瓶颈在寡核苷酸合成，而不在克隆效率——这就是为什么这个路线适合建库。',
+  followups: [
+    { q: 'Why DpnI?', a: '因为模板质粒是从 E. coli 提的，Dam 甲基化过；PCR 新合成的产物没有甲基化。DpnI 只切**双链都甲基化**的 GATC，所以专门消化模板、不动产物。这是"去母本"的标准操作。' },
+    { q: 'Walk me through the molecular mechanism of yeast HR.', a: '见 d5——这是独立一题，考官很可能真的问。' },
+    { q: 'Could you use Gibson assembly instead?', a: '可以，但对文库不划算：Gibson 是体外反应，产物还要再转化一次，多一道效率损失，最终转化子数只会更少。酵母 HR 是"组装和转化同一步"，对文库容量最友好。' }
+  ],
+  trap: '别忘了说线性化载体的**背景问题**。考官问 "how do you know the colonies are not just religated vector" 是很自然的一刀。',
+  lab: '技术 5A.6 + 技术 4（DpnI）+ 技术 24（同源臂引物）。你实际做的是 17 个亲本片段 + 线性化 pJYDC4 共转化，比这个复杂得多——完全可以说"我做过多片段版本的"。'
+},
+{
+  id: 'd5', group: 'D', level: 'deep',
+  q: 'What is the molecular mechanism of homologous recombination in yeast?',
+  qcn: '酵母同源重组的分子机制是什么？',
+  beats: [
+    '① 末端切除 resection：MRX（Mre11-Rad50-Xrs2）+ Exo1 把 5\' 端切掉，露出 3\' 单链尾',
+    '② Rad51 丝：Rad51（RecA 同源物）在 Rad52 帮助下装载到 3\' ssDNA 上',
+    '③ 链入侵 strand invasion：Rad51 丝搜索同源序列，侵入双链，形成 D-loop',
+    '④ 延伸与连接：聚合酶从入侵的 3\' 端延伸，缺口封上',
+    '为什么酵母特别强：它修复双链断裂主要走 HR，而不是像哺乳动物那样偏 NHEJ'
+  ],
+  script: 'Four steps. First, resection: the MRX complex — Mre11, Rad50, Xrs2 — together with Exo1 chews back the five-prime ends of the linear DNA, leaving three-prime single-stranded tails. Second, Rad51, the eukaryotic RecA homologue, is loaded onto that single-stranded DNA with help from Rad52, forming a nucleoprotein filament. Third, strand invasion: that filament searches for homology and invades the duplex, forming a D-loop. Fourth, DNA polymerase extends from the invading three-prime end, copying across the homologous region, and the gaps are sealed. Yeast is unusually good at this because it repairs double-strand breaks predominantly by homologous recombination, whereas mammalian cells lean on non-homologous end joining.',
+  cn: '这题在你手册里标着 ★口试重点★，而且和作业直接相关，被问的概率很高。\n\n四步一定要按顺序背下来：**resection → Rad51 filament → strand invasion / D-loop → extension & ligation**。\n\n关键酶名要报得出：**Mre11-Rad50-Xrs2 (MRX)、Exo1、Rad51、Rad52**。注意 Rad51 是 RecA 的真核同源物——这个对应关系考官爱问。\n\n最后一句"酵母偏 HR、哺乳动物偏 NHEJ"是解释**为什么酵母能当克隆宿主**的根本原因，别漏。',
+  followups: [
+    { q: 'Why does 40 bp of homology suffice?', a: 'Rad51 丝的同源搜索需要足够长的配对区来稳定 D-loop。实验上 ~30–40 bp 就够高效，再长收益递减。这比哺乳动物需要的同源臂（通常几百 bp 到 kb）短得多——又是 HR 主导的好处。' },
+    { q: 'What is the human/RecA equivalent?', a: '细菌是 RecA，酵母是 Rad51，人也是 RAD51。这条通路从细菌到人是保守的。' }
+  ],
+  trap: null,
+  lab: '技术 5A.2，你手册里写着"口试必背"。'
+},
+{
+  id: 'd6', group: 'D', level: 'deep',
+  q: 'Why four or five positions? Why not ten?',
+  qcn: '为什么是四到五个位点，不是十个？',
+  beats: [
+    '十个位点：蛋白 20¹⁰ ≈ 10¹³，DNA 32¹⁰ ≈ 10¹⁵',
+    '酵母转化上限 ~10⁸ —— 差七个数量级',
+    '你只能抽到文库的极小一部分，选出来的不是"最好的"，是"抽到的里面最好的"',
+    '而且终止子比例暴涨：1−(31/32)¹⁰ ≈ 27%',
+    '四到五个位点是能被"完整覆盖"的最大规模'
+  ],
+  script: 'Because of what I can actually cover. Ten NNK positions is 20 to the tenth at the protein level, about 10¹³, and 10¹⁵ at the DNA level. Yeast electroporation gives me at most 10⁸ transformants. I would be sampling one part in ten million of my own library, so whatever I select is not the best variant — it is the best of the tiny random subset I happened to make. Also the stop codon fraction climbs to about 27%. Four or five positions is roughly the largest window I can claim to have covered, and I would rather make a complete small library than an unrepresentative large one.',
+  cn: '"the best of the subset I happened to make" —— 这句话是这题的核心，也是定向进化里一个普遍而重要的原则：**文库大到超过采样能力，选择就退化成了随机抽样加局部优化**。\n\n这也解释了为什么"文库越大越好"是错的。大文库只在你能采样它的时候才有意义。\n\n如果考官逼你 "那如果我就是想探索十个位点呢"，正确答案是**分步**：先固定五个、筛出好的，再在赢家背景上随机化另外五个（迭代式饱和突变 / walking）。这样每一步都保持在可覆盖范围内。这是 CASTing / ISM 的思路，能提到就很漂亮。',
+  followups: [
+    { q: 'How would you explore ten positions then?', a: '分两轮 walking：先随机化第 1–5 位，选出最优背景；再在这个背景上随机化第 6–10 位。每轮的文库都在 10⁶–10⁷，都覆盖得住。代价是你只能走贪心路径，可能错过需要同时改变多个位点的上位效应（epistasis）解。这个代价要诚实说出来。' }
+  ],
+  trap: null,
+  lab: null
+},
+
+/* ═══════════════════════════ E · 蛋白酶挑战 ═══════════════════════════ */
+{
+  id: 'e1', group: 'E', level: 'core',
+  q: 'Pepsin — what class of enzyme, what pH, what does it cut?',
+  qcn: 'Pepsin 是哪类酶？什么 pH？切什么？',
+  beats: [
+    '天冬氨酸蛋白酶（aspartic protease），活性位点两个 Asp',
+    '最适 pH 1.5–2.5 —— 极酸，这是它的特点',
+    '偏好疏水/芳香族残基：Phe、Leu、Trp、Tyr（P1 和 P1\' 都看）',
+    'pH 升到 7 以上失活，超过 8 不可逆',
+    '最后这一点是你灭活它的办法'
+  ],
+  script: 'Pepsin is an aspartic protease — two aspartate residues in the active site do the catalysis, which is why it needs a very low pH, optimum around 1.5 to 2.5. It is an endopeptidase with fairly broad specificity, preferring hydrophobic and aromatic residues — phenylalanine, leucine, tryptophan, tyrosine — at both P1 and P1 prime. And usefully for me, it loses activity above pH 7 and is irreversibly denatured above about pH 8, so I can stop the gastric stage simply by neutralising, without adding an inhibitor that I would then have to wash out.',
+  cn: '最后那句是**实操层面的金句**：pepsin 的灭活方式就是中和 pH，这既生理（对应食糜进入十二指肠被碳酸氢盐中和）又干净（不引入抑制剂残留）。这一点直接接到 f4——染色前必须确保蛋白酶已死。\n\n为什么 aspartic protease 需要酸：两个 Asp 中一个必须质子化、一个去质子化，才能协同活化水分子进攻肽键羰基。pH 太高两个都去质子化，机制就断了。\n\n**同类**：HIV protease、renin、cathepsin D 都是天冬氨酸蛋白酶。HIV protease 抑制剂就是这一类的经典药物靶点，可以顺口提一句显示知识面。',
+  followups: [
+    { q: 'Will your yeast survive pH 2?', a: '见 e4——这是必须单独回答的一题。' },
+    { q: 'Does pepsin need calcium or a cofactor?', a: '不需要金属离子。它以 pepsinogen 酶原形式分泌，在酸性下自催化切掉 N 端前肽而活化——这是典型的酶原激活，防止腺体自我消化。' }
+  ],
+  trap: '别把 pepsin 说成丝氨酸蛋白酶。它是**天冬氨酸**蛋白酶——这是它需要极酸 pH 的原因，答错等于机制全错。',
+  lab: null
+},
+{
+  id: 'e2', group: 'E', level: 'core',
+  q: 'What is in your "pancreatic protease mixture"? Give me the specificities.',
+  qcn: '"胰酶混合物"里有什么？各自切什么？',
+  beats: [
+    'Trypsin：切 Lys / Arg 之后（C 端侧），遇 Pro 不切',
+    'Chymotrypsin：切芳香族 Phe / Trp / Tyr 之后，Leu / Met 慢一些',
+    'Elastase：切小残基 Ala / Gly / Val / Ser 之后',
+    'Carboxypeptidase A / B：外肽酶，从 C 端一个个啃',
+    '三种内肽酶偏好互补 —— 加起来几乎覆盖全部残基类型'
+  ],
+  script: 'Pancreatin contains trypsin, chymotrypsin, elastase and the carboxypeptidases, plus amylase and lipase which are irrelevant here. Trypsin is the narrowest — it cleaves only after lysine and arginine, and not if proline follows. Chymotrypsin cleaves after aromatics: phenylalanine, tryptophan, tyrosine, and more slowly after leucine and methionine. Elastase takes the opposite end of the size range, cleaving after small residues — alanine, glycine, valine, serine. All three are serine proteases with the classic Ser-His-Asp catalytic triad. Between them they cover basic, aromatic and small residues, which is precisely why designing a sequence to dodge all of them at once is hard.',
+  cn: '★ **最后那句是整个方案的论证核心**（回到 c1）：三种酶的偏好加起来覆盖了碱性、芳香族、小残基三大类。你能躲开的残基所剩无几——这就是为什么理性设计难，为什么要用选择。\n\n特别注意 **elastase**：它偏好 Ala/Gly/Val/Ser。而野生型 linker 是 **(G4S)ₙ —— 全是 Gly 和 Ser**！也就是说标准的柔性 linker 恰好是 elastase 的理想底物。这个观察非常有力，主动说出来会让考官眼睛一亮：**你的问题不是假想的，标准构建体在设计上就是易切的。**\n\n**Ser-His-Asp 催化三联体**要能报出来：His 作碱夺 Ser 的质子，Ser 的氧亲核进攻羰基碳，形成酰基-酶中间体，Asp 稳定质子化的 His。这是生化里最经典的机制之一。',
+  followups: [
+    { q: 'So is your wild-type (G4S) linker a good elastase substrate?', a: '★ 是的，正是。全 Gly/Ser 组成，恰好落在 elastase 的偏好里，而且极端柔性意味着它能轻松以伸展构象进入活性位点 cleft。所以标准展示 linker 在胃肠道里是双重脆弱的：序列对，构象也对。这是我这个课题存在的理由。' },
+    { q: 'What is the catalytic triad?', a: 'Ser-His-Asp。His 当广义碱活化 Ser 的羟基，Ser 亲核进攻底物羰基碳形成四面体中间体，坍塌后形成酰基-酶共价中间体并释放 C 端产物，然后水解掉酰基-酶。Asp 通过氢键稳定 His 的咪唑正离子。' }
+  ],
+  trap: '别只说 trypsin。考官问 "mixture" 就是要你列举。列不全会显得你写的时候没想清楚"混合物"里到底有什么。',
+  lab: null
+},
+{
+  id: 'e3', group: 'E', level: 'core',
+  q: 'Why sequential — gastric then intestinal — rather than treating with everything at once?',
+  qcn: '为什么先胃后肠依次做，不一次全上？',
+  beats: [
+    '因为生理上就是依次的：颗粒先过胃再进小肠',
+    'pH 不兼容：pepsin 要 pH 2，胰酶要 pH 6.8',
+    '一起加，两边都不在最适 pH，等于两个都没测准',
+    '而且 pepsin 在 pH 6.8 下已经失活了',
+    '依次做才是在选"两关都过得去"的 linker'
+  ],
+  script: 'Three reasons, and the first is that it is what actually happens: a particle goes through the stomach and then the small intestine, in that order. Second, the pH requirements are incompatible — pepsin needs about pH 2 and the pancreatic enzymes work around pH 6.8. Mixing them means neither is at its optimum, and in fact pepsin is already inactivated at 6.8. Third, and this is the selection argument: doing them sequentially means a variant has to survive both, in series. That selects for general resistance rather than resistance to whichever enzyme happened to dominate in a mixture.',
+  cn: '三条理由要分层给：**生理真实性 → 生化不兼容 → 选择逻辑**。第三条最重要，因为它是"设计"层面的。\n\n"survive both, in series" 是关键短语：串联的选择压是 AND，不是 OR。混在一起做的话，一个只抗 trypsin 但极易被 pepsin 切的变体，可能因为 pepsin 在中性下没活性而蒙混过关。\n\n注意这也解释了为什么原文那句 "should favour linkers that can tolerate several different proteases rather than only one enzyme" 是对的——但你原文只写了结论，没写这三层理由。口试补上。',
+  followups: [
+    { q: 'How long at each stage?', a: '按生理时间：胃排空约 30 分钟到 2 小时（液体快、固体慢），小肠转运 2–4 小时。第一轮我会用偏温和的一端（胃 30 min、肠 1 h），后面几轮往生理时长加压。具体时长由 e5 的滴定实验定，不是拍脑袋。' },
+    { q: 'Do you need to neutralise between stages?', a: '必须。把 pH 从 2 提到 6.8 既是下一阶段的条件，也顺手把 pepsin 不可逆灭活了。生理上这对应胰腺分泌碳酸氢盐中和食糜——所以这一步是"照抄生理"，不是人为加的。' }
+  ],
+  trap: null,
+  lab: null
+},
+{
+  id: 'e4', group: 'E', level: 'killer',
+  q: 'Will your yeast even survive 30 minutes at pH 2? What is your evidence?',
+  qcn: '你的酵母在 pH 2 下待 30 分钟还活着吗？证据呢？',
+  beats: [
+    '先诚实：这是必须先测的，不是可以假设的',
+    '酵母耐酸性确实不错（它自己发酵会把环境酸化）',
+    '但 pH 2 加 37 °C 是另一回事',
+    '而且——关键——分选不需要细胞"活"，只需要"完整"',
+    '真正的要求是细胞不裂解、表面表位不被破坏；活性只在扩增那一步才需要'
+  ],
+  script: 'I would not assume it — that is a control I have to run before anything else. Yeast is reasonably acid tolerant, since fermentation acidifies its own environment, but pH 2 at 37 °C for half an hour is a real stress and I would need a viability curve first. But there is an important distinction: FACS does not require the cells to be alive, only intact and stainable. What I actually need is that the cell does not lyse and the surface epitopes are not destroyed. Viability only matters at the amplification step, when I regrow the sorted pool. So the real experiment is: plate for CFU after the challenge to know my recovery, and if survival is too low, sort more cells to compensate, or shorten the gastric stage.',
+  cn: '★ 这是一记 killer，因为它攻击的是一个你**没有在原文里处理**的前提。\n\n答好的关键是那个**区分**：分选要的是"完整可染"，不是"活"。这个区分显示你真的想过流式的物理过程——细胞死了照样能被激光测荧光、照样能被液滴偏转分出来。只有最后重新培养那一步才需要活性。\n\n然后给出**可执行的应对**：\n1. 先做存活曲线（不同 pH × 时间 → CFU）\n2. 挑战后铺板算回收率\n3. 存活太低就多分选一些细胞补偿，或者缩短胃段\n\n**姿态很重要**：不要辩护，直接说 "that is a control I have to run first"。承认一个未验证的前提，比硬撑一个猜测好得多。这也正是 CLAUDE.md 里那条"每个阈值都要有证据"的精神。',
+  followups: [
+    { q: 'If most cells die, does your selection still work?', a: '只要死亡是**随机的**（对所有 linker 变体一视同仁），它只降低回收率，不引入偏倚——多分选一些细胞就能补回来。危险的是死亡**不随机**：如果某些变体的细胞更耐酸，那就变成了 Possible Problem #2 描述的情况（i2），要靠 spike-in reference 株来监测。' },
+    { q: 'Could you do the challenge on fixed cells?', a: '可以考虑，但要小心：固定（比如甲醛）会交联蛋白，可能既改变蛋白酶的可及性、又改变抗体的可及性——两个读数都被扰动。而且固定后没法扩增。更可能的用法是做一个固定的平行样，专门用来分离"细胞死亡"和"linker 切割"这两个效应。' }
+  ],
+  trap: '千万别说 "酵母很结实，应该没问题"。这就是 CLAUDE.md 说的"不要硬凑一个看起来合理的答案"。说"我不知道，这是第一个要测的"反而得分。',
+  lab: '技术 5（电转后铺板计数）。CFU 计数你天天做。'
+},
+{
+  id: 'e5', group: 'E', level: 'core',
+  q: 'How do you choose the protease concentration and incubation time?',
+  qcn: '蛋白酶浓度和时间怎么定？',
+  beats: [
+    '不猜，滴定',
+    '拿未筛的文库（或者野生型 linker 单克隆）做一个二维梯度：浓度 × 时间',
+    '每个条件测 c-Myc/HA ratio 分布',
+    '选一个把阳性率压到 0.1–1% 的条件',
+    '太温和 → 没有选择压；太狠 → 多样性一次杀光'
+  ],
+  script: 'I titrate rather than guess. I take the unselected library, or a clone with the wild-type linker, and run a two-dimensional grid of protease concentration against incubation time, reading the c-Myc to HA ratio distribution by flow cytometry at each point. Then I pick conditions where the high-ratio population is somewhere around 0.1 to 1 percent. Too mild and there is no selective pressure — everything passes. Too harsh and I lose the diversity in one round and end up selecting noise. And I would repeat that titration between rounds, because the population I am challenging has changed.',
+  cn: '★ 这题直接对应 CLAUDE.md 里的第一条原则：**每个阈值都要有证据**。答案的形式必须是"我测这个量、我看它的分布、我把阈值放在这里、理由是"。\n\n0.1–1% 这个数字有根据：你自己的 expression sort 第 1–2 轮就是取 0.8–1.2%，第 3 轮富集到 33%。这是同一个量级的实践经验，**直接引用**。\n\n最后那句"每轮重新滴定"是深度：第二轮面对的群体已经比第一轮抗切了，用第一轮的条件就没有选择压了。加压不是拍脑袋乘二，是重新测。',
+  followups: [
+    { q: 'What does "more stringent" mean concretely between rounds?', a: '三个旋钮：提高蛋白酶浓度、延长孵育时间、或者收窄分选门。我会优先延长时间——它最接近生理变量（转运时间），而且不改变酶/底物比这个反应本身的性质。' },
+    { q: 'How do you know the pressure was actually applied?', a: '看 mock-treated 对照和处理组的 ratio 分布有没有分开。如果两条曲线重叠，说明蛋白酶没起作用（酶失活了？浓度太低？），这一轮的分选结果无意义。这个对照每轮都要有。' }
+  ],
+  trap: null,
+  lab: '技术 6.7（你的 expression sort：第 1–2 轮 0.8–1.2%，第 3 轮 33%）。这是你自己的数据，报出来最有说服力。'
+},
+{
+  id: 'e6', group: 'E', level: 'killer',
+  q: 'Aren\'t you just selecting for a linker with no lysines, arginines or aromatics? Do you need an experiment for that?',
+  qcn: '你不就是在筛一条没有 K、R、芳香族的 linker 吗？这需要做实验？',
+  beats: [
+    '先承认：如果只有 trypsin 和 chymotrypsin，这个批评基本成立',
+    '但 elastase 偏好小残基 —— 你躲掉 K/R/芳香族剩下的正好是它的底物',
+    '所以序列层面没有"安全"的残基集合',
+    '而且切不切还取决于构象可及性，那个算不出来',
+    '选择同时评估序列和构象，而且是在真实的表面几何下'
+  ],
+  script: 'If the challenge were only trypsin and chymotrypsin, that criticism would largely be fair — I could design that on paper. But elastase cuts after small residues, alanine, glycine, valine, serine, which is exactly what is left once you remove the basic and aromatic residues. There is no residue set that is simply safe. And beyond composition, whether a bond is cleaved depends on whether it can be presented to the active site in an extended conformation, and on steric shielding by the antigen and the cell wall. None of that is predictable from sequence. Selection measures the actual property, on the actual surface, against the actual enzyme panel. What I would expect to learn is not just which residues, but which arrangements — and that is genuinely new information.',
+  cn: '★★ 这是最狠的一刀，因为它质疑的是**整个课题有没有必要存在**。必须练熟。\n\n三层防御，按强度递增：\n1. **elastase 堵死了"避开危险残基"这条路** —— 这是最硬的事实反驳\n2. **构象可及性算不出来** —— 序列预测的根本局限\n3. **选择产出的是"排列"而非"成分"** —— 你会学到哪些**组合和顺序**有效，这是组合信息，不是清单信息\n\n第三层是升华：如果结果只是"别用 K/R"，那确实白做了。但如果结果是"某个特定的排列比同样组成的其他排列强十倍"，那就是设计学不到的东西。\n\n**开头先承认对方部分正确**。直接反驳一记好问题会显得防御性太强。',
+  followups: [
+    { q: 'So what would a boring result look like, and would you publish it?', a: '无聊的结果就是：富集出来的全是低复杂度的 Gly/Pro 序列，和纸面预测一样。那也是有价值的负结果——它说明这个系统里序列组成确实主导，构象效应可忽略。按 CLAUDE.md 的原则，负结果就照负结果报，不粉饰。' }
+  ],
+  trap: null,
+  lab: null
+},
+
+/* ═══════════════════════════ F · 读数与分选 ═══════════════════════════ */
+{
+  id: 'f1', group: 'F', level: 'core',
+  q: 'Why sort on the c-Myc to HA ratio instead of c-Myc alone?',
+  qcn: '为什么按 c-Myc/HA 比值分选，不直接看 c-Myc？',
+  beats: [
+    '因为细胞之间的展示量本来就差很多',
+    '只看 c-Myc，展示量高的细胞会赢，不管它的 linker 好不好',
+    'HA 是"原来有多少"的内参',
+    '比值 = 剩下的 / 原来的 = 保留率',
+    '这正是我要选的性质'
+  ],
+  script: 'Because display level varies a lot from cell to cell — plasmid copy number, where a cell is in the cycle, how well that particular fusion folded. If I gate on c-Myc alone, I select cells that started with more construct, not cells whose linker survived. HA is proximal to the anchor, so it reports how much construct was there before the challenge, and it stays put whatever happens downstream of it. The ratio is therefore surviving over starting — a per-cell retention fraction — and retention is exactly the property I am trying to improve. It is the same logic as normalising binding to expression.',
+  cn: '最后那句类比是你的**主场**：这就是你 binding sort 里做的事。ACE2-CF640R 的结合信号必须除以 SpyTag-FITC 的展示量，否则展示得多的克隆看起来结合就强。**完全同构**。\n\n主动说出这个类比：\n> "This is the same normalisation I use in my own work — we display RBD variants and measure ACE2 binding, and we always normalise to a SpyTag-based display reporter, because otherwise you select for expression, not affinity."\n\n这一句同时证明了三件事：你懂这个原理、你做过、而且你能把课堂内容和自己的研究连起来。这是口试里最值钱的动作。',
+  followups: [
+    { q: 'Is the ratio really independent of expression level?', a: '近似独立，但不是严格独立。极低表达的细胞两个信号都接近背景，比值噪声会炸（小数除小数）。所以实际操作要先在 HA 上设一个下限门，只在展示量足够的细胞里算比值。这个细节能说出来就很专业。' },
+    { q: 'How do you gate on a ratio in practice?', a: '在 c-Myc 对 HA 的双参数散点图上画一个**对角门**——收集落在 y=kx 这条线上方的细胞。流式软件里也可以直接用衍生参数（比值通道），但对角门更直观、更好解释。' }
+  ],
+  lab: '技术 5B.4 + 技术 29。你的 binding sort 用 SpyTag-FITC 归一化展示量，逻辑完全一致。'
+},
+{
+  id: 'f2', group: 'F', level: 'killer',
+  q: 'A cell has low c-Myc and normal HA. Give me three explanations other than "the linker was cut".',
+  qcn: '一个细胞 c-Myc 低、HA 正常。除了"linker 被切了"，还有哪三种解释？',
+  beats: [
+    '① 提前终止：NNK 的 TAG 让翻译在 linker 处停住 —— 根本没做出 c-Myc',
+    '② 抗原本身被切了：切点在抗原内部，不在 linker 里',
+    '③ 表位可及性变了：c-Myc 还在，但被遮住或构象变了，抗体认不上',
+    '④（送分）抗体被残留蛋白酶降解了',
+    '每一种都有对应的对照'
+  ],
+  script: 'First, premature termination — NNK includes the amber codon, so about fifteen percent of my library truncates in the linker and never makes c-Myc at all. That is why I pre-sort for double positives before the challenge. Second, cleavage inside the antigen rather than in the linker: the antigen is a much larger protease target than the linker is, and cutting anywhere between HA and c-Myc gives the same signal. Third, loss of epitope accessibility — the c-Myc peptide is still covalently attached but is shielded or in a conformation the antibody does not bind. And fourth, which is my own procedural risk: residual protease degrading the detection antibodies during staining. Each of those needs a different control.',
+  cn: '★★ 这题是整篇作业**最重要的一题**。你原文第 8 段已经承认了 confound（"c-Myc loss would not by itself prove that the linker was cut"），所以考官几乎一定会顺着往下挖，问你"那有哪些"。\n\n第 ② 条最要命也最少人想到：**抗原比 linker 大得多，是大得多的蛋白酶靶点**。你的 ratio 读数无法区分"linker 被切"和"抗原被切"——两者都是 HA 保留、c-Myc 丢失。这意味着你的选择实际上是在选 "HA 和 c-Myc 之间整段都抗切"，而不只是 linker。\n\n这**不完全是坏事**：对口服疫苗来说，抗原本身抗切也是你想要的。但它意味着富集出来的可能有抗原区的突变——而你说了抗原不变（a3）。解决办法：测序时只测 linker 区，同时**用限制性内切酶或 PCR 验证抗原区没变**；或者接受它，把它讲成"我选的是整个 displayed module 的抗切性"。\n\n第 ④ 条连到 f4，是操作层面的，说出来显示你想过实验会怎么出错。\n\n对照清单：\n| 解释 | 对照 |\n|---|---|\n| 提前终止 | 挑战前 pre-sort 双阳性 |\n| 抗原内部切割 | 单克隆验证：western 看片段大小；只对 linker 区测序并核对抗原区 |\n| 表位可及性 | 用第二个远端 tag（不同表位）或抗-抗原抗体交叉验证 |\n| 抗体被降解 | mock 样品加蛋白酶后立即灭活，比较染色强度 |',
+  followups: [
+    { q: 'So is your selection really about the linker?', a: '严格说，是关于"HA 和 c-Myc 之间整段的抗蛋白酶性"。因为只有 linker 是随机化的，遗传变异只发生在 linker 上，所以**富集出来的差异必然来自 linker**——抗原对所有变体都一样，它构成的是恒定背景，不是变量。这个论证很关键：变异源限定了因果归属。' },
+    { q: 'How would you prove the linker was cut, for your final candidates?', a: '单克隆做 western blot：挑战前后都跑，用抗-HA 探针看留在细胞上的片段的大小。切在 linker 里会给出一个特定分子量的短片段，切在抗原里给出更长的。或者更直接：把挑战后的上清收集起来做质谱，找切割产物的 N 端序列——那直接告诉你切点在哪。' }
+  ],
+  trap: '别答成只有一种。考官问 "three explanations" 是在测你有没有想过替代假说。这是 CLAUDE.md 第五条"不要硬凑一个看似合理的答案"的口试版本。',
+  lab: null
+},
+{
+  id: 'f3', group: 'F', level: 'core',
+  q: 'Walk me through the staining. Antibodies, fluorophores, channels.',
+  qcn: '染色怎么做？抗体、荧光基团、通道。',
+  beats: [
+    '两个一抗必须不同物种（比如鼠抗-c-Myc 9E10 + 兔/鸡抗-HA）',
+    '两个二抗种属特异、标不同荧光（AF488 和 AF647）',
+    '488 nm 激光激发 AF488，发射 ~519 nm',
+    '640 nm 激光激发 AF647，发射 ~668 nm',
+    '两条激光空间分离，串色小',
+    '全程冰上、PBSF（PBS + BSA）洗，防止内化和非特异'
+  ],
+  script: 'Mouse anti-c-Myc, clone 9E10, and a rabbit or chicken anti-HA — different host species, which matters because the secondaries have to tell them apart. Then a goat anti-mouse conjugated to Alexa 488 and a goat anti-rabbit conjugated to Alexa 647. AF488 is excited by the 488 laser and emits around 519, AF647 by the 640 laser emitting around 668. Those two lasers are spatially separated in the instrument, so spillover between the pair is small. Everything on ice in PBS with BSA, to block non-specific binding and to stop any internalisation. And critically, the protease has to be fully quenched before any antibody goes in.',
+  cn: '为什么选 **AF488 / AF647** 这一对而不是 FITC/PE：488 和 640 是两条不同的激光，在仪器里空间上分开激发，所以串色远小于同一条激光激发的两个染料（比如 FITC 和 PE 都靠 488）。选跨激光的组合是流式实验设计的基本功。\n\n**PBSF** = PBS + BSA（你手册里的写法）。BSA 封闭非特异吸附。冰上操作既减少内化，也减少解离。\n\n最后一句（灭活蛋白酶）是这题的题眼，f4 会专门问。',
+  followups: [
+    { q: 'Why not directly conjugated primaries?', a: '可以而且更干净：少一步、没有二抗交叉反应、孵育时间短。代价是没有二抗的信号放大。如果 tag 的表达量够高（yeast display 通常够），直接标记是更好的选择。' },
+    { q: 'What single-colour controls do you need?', a: '每个荧光基团单独染的样品（用于补偿），加一个完全不染的样品（定义背景/自发荧光）。酵母的自发荧光在绿色通道不可忽略，所以未染对照不是可选的。' }
+  ],
+  lab: '技术 1（荧光标记）+ 技术 6.2。你自己用 CF488 / CF640R 这一对，同样是跨激光设计。'
+},
+{
+  id: 'f4', group: 'F', level: 'killer',
+  q: 'You stain with antibodies after protease treatment. Antibodies are proteins. What happens?',
+  qcn: '你在蛋白酶处理之后用抗体染色。抗体也是蛋白。会发生什么？',
+  beats: [
+    '★ 直接承认：如果不灭活，抗体会被切碎',
+    '结果：两个通道信号都掉，你测的是残留酶活性，不是 linker',
+    '灭活 pepsin：把 pH 提到 ≥7（>8 不可逆）',
+    '灭活胰酶：加 AEBSF/PMSF 或大豆胰蛋白酶抑制剂',
+    '再加冰冷 PBSF 多次离心洗涤，物理去除',
+    '验证：mock 样品——把酶灭活后再加进去，看染色强度有没有变'
+  ],
+  script: 'That is a real hazard, and if I did not handle it the whole experiment would report residual protease activity rather than linker resistance. The proteases would cleave both the primary and secondary antibodies, both channels would drop, and the ratio would be garbage. So the challenge has to be terminated properly: pepsin I quench by neutralising to pH 8, which inactivates it irreversibly, and the pancreatic serine proteases I quench with a serine protease inhibitor such as AEBSF, or soybean trypsin inhibitor for trypsin specifically. Then several cold washes in PBS-BSA to physically remove the enzymes before staining. And I would validate it: take pre-quenched protease, add it to an untreated sample, and check that staining intensity is unaffected. If it is, the quench works.',
+  cn: '★★ 这是**操作层面最锋利的一刀**，而且原文完全没提。答不出来会显得你只在纸上想过，没在台面上想过。\n\n答案的结构值得记：**承认危险 → 说明后果 → 给出灭活手段 → 给出验证实验**。最后那步"怎么证明灭活成功了"是把回答从"我知道要灭活"提升到"我知道怎么确认"的关键。\n\n验证实验设计得很巧：把已灭活的蛋白酶加到未处理样品里再染色。如果染色强度和不加酶一样，说明灭活彻底。这是一个真正的对照，不是一句保证。\n\n**AEBSF**（4-(2-氨基乙基)苯磺酰氟）比 PMSF 好：水溶性更好、毒性低、在水溶液里更稳定。PMSF 半衰期短且要用异丙醇溶。能说出这个区别是加分的。',
+  followups: [
+    { q: 'Could the inhibitor itself interfere with staining?', a: 'AEBSF 是共价不可逆抑制剂，作用于丝氨酸蛋白酶的活性位点 Ser。它不认抗体（抗体不是丝氨酸蛋白酶），所以本身不影响染色。但为了保险，洗涤步骤还是要有——而且上面那个验证实验会同时把这个可能性一起测掉。' },
+    { q: 'What if you just wash really well instead?', a: '风险在于蛋白酶可能吸附在酵母细胞壁上，洗不干净。而且洗涤本身耗时，在这段时间里残留的酶还在工作。化学灭活加洗涤，两道保险，比单靠洗涤稳妥得多。' }
+  ],
+  trap: null,
+  lab: '技术 6.2 / 技术 1。你自己染完 bind 之后用 PBSF 洗一次再上机——同样的洗涤逻辑，只是你不需要灭活酶。'
+},
+{
+  id: 'f5', group: 'F', level: 'core',
+  q: 'Explain physically how a FACS sorter separates one cell from another.',
+  qcn: '从物理上讲，FACS 怎么把一个细胞和另一个分开？',
+  beats: [
+    '① 流体动力学聚焦：鞘液包裹样品流，细胞被挤成单列',
+    '② 激光询问：每个细胞过激光焦点，产生 FSC（大小）、SSC（内部复杂度）、荧光',
+    '③ 喷嘴振动把液流打成均匀液滴',
+    '④ 目标细胞进入某个液滴的瞬间，给整条液流充电',
+    '⑤ 带电液滴经过高压偏转板，被电场偏转到收集管',
+    '关键：测量和分离在空间上分开，中间有固定的"液滴延迟"'
+  ],
+  script: 'The sample stream is injected into a faster sheath stream, which hydrodynamically focuses the cells into single file. Each cell passes a laser focus, producing forward scatter, which scales with size, side scatter, which reports internal complexity, and fluorescence in each channel. Downstream of that, a piezo vibrates the nozzle so the stream breaks into uniform droplets at a fixed frequency. The instrument knows the delay between interrogation and droplet formation, so when a cell that satisfies the gate is about to be in a forming droplet, it charges the stream at that instant. The droplet carries that charge, passes between two high-voltage deflection plates, and is pulled sideways into a collection tube. Everything else goes to waste.',
+  cn: '这题考的是你**是不是真的理解仪器**，而不是把它当黑箱。\n\n最关键的概念是 **drop delay（液滴延迟）**：测量发生在激光点，分离发生在几毫米之外的液滴断点，中间有一个必须精确校准的时间差。校准不准 → 充错液滴 → 纯度崩溃。这是分选前每次都要做的事（你的操作员 流式操作员 做的就是这个）。\n\n补充值得说的：**coincidence / abort**。如果两个细胞恰好在同一个液滴里，仪器会选择放弃（abort）而不是冒险，这就是为什么纯度和产率是 trade-off——纯度模式丢得多，产率模式收得多但脏。\n\n**FSC/SSC 的物理**：FSC 是小角度前向散射，主要由细胞截面大小决定；SSC 是 90° 侧向散射，由内部折射率不连续（细胞器、颗粒度）决定。酵母的 FSC/SSC 图上活细胞群很紧，碎片在左下角。',
+  followups: [
+    { q: 'What is drop delay and why does it matter?', a: '从激光询问到细胞所在的那段液流断成液滴，中间隔了固定的距离和时间，通常十几个液滴。仪器必须知道这个延迟才能在正确的时刻充电。校准偏一个液滴，你分选的就是它前面或后面那个细胞——纯度直接崩。' },
+    { q: 'Why do doublets matter?', a: '两个粘在一起的细胞会被当成一个事件，荧光是两个的和，而且分选时两个一起进管。一个高 ratio 的细胞粘着一个低 ratio 的，就把污染带进了收集管。用 FSC-A 对 FSC-H 去黏连：单细胞在对角线上，双联体的面积相对高度偏大，落在对角线上方。' }
+  ],
+  lab: '技术 6.4，你手册里有完整的四步。你自己的样品是 流式操作员 上机，但原理你要能讲。'
+},
+{
+  id: 'f6', group: 'F', level: 'core',
+  q: 'What gates would you draw, and in what order?',
+  qcn: '你会画哪些门？按什么顺序？',
+  beats: [
+    '① FSC-A vs SSC-A：圈出完整酵母，排除碎片和聚集物',
+    '② FSC-A vs FSC-H：去黏连（doublet exclusion）',
+    '③ HA 通道下限门：只保留展示量足够的细胞（否则比值噪声炸）',
+    '④ c-Myc vs HA 双参数图上的对角门：收集高比值群',
+    '顺序不能乱——每一步都在为下一步清理群体'
+  ],
+  script: 'Four, in order. First FSC-A against SSC-A to define intact yeast and exclude debris — after a protease challenge there will be more debris than usual, so this gate matters more here than in a normal experiment. Second FSC-A against FSC-H to exclude doublets. Third, a lower threshold on HA, because the ratio is a quotient and it becomes meaningless when both numbers approach background — I only compute it on cells that displayed enough to begin with. And fourth, on a c-Myc versus HA bivariate plot, a diagonal gate collecting the population above a chosen slope. Each gate cleans up the population for the one after it.',
+  cn: '★ 第 ③ 个门是**这题的分水岭**。绝大多数人只会说前两个加最后一个。\n\n为什么需要 HA 下限门：比值是除法。当 HA 接近背景时，分母很小，一点噪声就让比值飞到天上——低表达的细胞会**假性地**出现在高比值群里。这是纯粹的数学假象，不是生物学。设一个 HA 下限就把它们排除了。\n\n这个洞察显示你理解"比值读数"的统计脆弱性，不只是会用它。\n\n**分选后还要做的**：把收集管里的细胞重新上机跑一遍（post-sort purity check），确认落在门里的比例。你手册里 expression sort 从 0.8–1.2% 富集到 33% 就是这么读出来的。',
+  followups: [
+    { q: 'How do you set the diagonal gate\'s position?', a: '用 mock-treated 对照定基线：未处理的文库在 c-Myc/HA 图上有一个分布，把门设在这个分布的上方尾部。这样"高比值"是相对于同一天、同一批染色的未处理群体定义的，而不是一个绝对数。这就是每轮都要带 mock 对照的另一个理由。' },
+    { q: 'How wide should the gate be?', a: '这是纯度对多样性的权衡。第一轮我会设宽一些（收 1% 左右），保住多样性；后面几轮收紧。设太窄的第一轮可能把真正的赢家和噪声一起丢掉。' }
+  ],
+  lab: '技术 6.6。'
+},
+{
+  id: 'f7', group: 'F', level: 'deep',
+  q: 'Do you need compensation? Explain what it corrects.',
+  qcn: '需要做补偿吗？它在修正什么？',
+  beats: [
+    '需要，只要不止一个荧光基团',
+    '荧光发射谱是宽的、有拖尾的',
+    'AF488 的发射尾巴会漏一部分进 AF647 的检测通道',
+    '补偿就是按单染对照测出漏出比例，从每个通道里扣掉',
+    '这里尤其重要，因为你的读数是**比值**——串色会系统性地扭曲比值'
+  ],
+  script: 'Yes, whenever there is more than one fluorophore. Emission spectra are broad and asymmetric, with a long red tail, so some AF488 emission is detected in the AF647 channel and vice versa. Compensation measures that spillover using single-stained controls — cells stained with only one fluorophore — and subtracts the appropriate fraction from each detector. It matters more than usual in my experiment because my readout is a ratio: spillover from the HA channel into the c-Myc channel would inflate the apparent ratio in exactly the cells that have the most HA, which is a systematic bias, not random noise.',
+  cn: '★ 最后那句是这题的深度所在，**一定要说**。\n\n想清楚这个逻辑：如果 HA（AF647）的信号漏进 c-Myc（AF488）通道，那么 HA 越强的细胞，漏过去的越多，c-Myc 看起来越高 → 比值被虚高。而 HA 强的细胞就是展示量高的细胞。结果：**你精心设计的归一化被串色悄悄抵消了一部分**，你又回到了在选展示量。\n\n所以在比值读数里，补偿不是"锦上添花的规范操作"，是**读数正确性的前提**。\n\n选 488/640 跨激光组合的另一个理由也在这里：跨激光的串色本来就小得多，补偿量小，残余误差也小。这和 f3 接得上。',
+  followups: [
+    { q: 'What controls does compensation need?', a: '每个荧光基团一个单染样品，加一个未染样品。关键要求：单染对照必须和实验样品用**同一个染料、同样的亮度范围**（补偿珠或者真细胞都行，但不能拿一个亮十倍的对照去补一个暗样品）。' },
+    { q: 'Is spectral unmixing better?', a: '光谱流式（spectral cytometry）测的是完整的发射谱，然后用整条谱做解混，而不是用几个检测器做减法。对高维多色实验优势明显。你这个两色实验用传统补偿完全够。' }
+  ],
+  lab: '技术 6.8（你手册里列了"为什么需要补偿"）。'
+},
+{
+  id: 'f8', group: 'F', level: 'deep',
+  q: 'How do you calculate enrichment, and what number would satisfy you?',
+  qcn: '富集倍数怎么算？多少你才满意？',
+  beats: [
+    '富集倍数 = 分选后阳性率 / 分选前阳性率',
+    '每轮都要在同样的门、同样的染色条件下测',
+    '你自己的经验：expression sort 从 0.8–1.2% → 33%，约 30 倍',
+    '满意的标志不是某个绝对数，是"分布整体右移"',
+    '而且要看第二轮还有没有继续移动 —— 不动了说明到头了'
+  ],
+  script: 'Enrichment is the positive fraction after a round divided by the positive fraction before it, measured with the same gate and the same staining. But the number I would actually watch is whether the whole c-Myc-to-HA distribution shifts right between rounds, not just the fraction in one gate — a fraction can move because the gate is at the edge of a distribution. In my own work an expression sort went from about one percent to thirty-three percent over three rounds, roughly thirtyfold, and that is the sort of behaviour I would look for. The stopping signal is the distribution ceasing to move: if round three looks like round two, either I have converged or the pressure is no longer selective.',
+  cn: '★ "看分布整体右移，不只看门里的比例" 是这题的核心洞察。\n\n为什么：门设在分布边缘时，分布轻微移动会造成门内比例的巨大变化（尾部效应），反过来分布大幅移动而门在中间时比例变化反而不明显。**比例是分布的一个粗糙投影**，直接看分布更诚实。\n\n这也呼应 CLAUDE.md 的第一条：阈值放在两个分离群体之间的空隙里才不敏感；放在斜坡上就必须承认它是个限制。门设在分布尾部，恰恰就是"放在斜坡上"。\n\n**停止判据**要能说：分布不再移动 → 要么收敛了（找到最优），要么选择压失效了（酶不工作了 / 剩下的都一样抗切）。区分这两者要看 mock 对照和处理组还分不分得开（e5 的 followup）。',
+  followups: [
+    { q: 'What if enrichment is huge in round one and then stops?', a: '很可能第一轮把多样性杀得太狠——剩下的是少数几个克隆，后面就没得选了。测序会立刻告诉你：如果 round 1 之后的序列多样性只剩几十种，那就是过度选择。补救是回到 round 0 用更温和的条件重来。' }
+  ],
+  lab: '技术 6.6（富集倍数）+ 你自己的 expression sort 数据。'
+},
+
+/* ═══════════════════════════ G · 迭代与测序 ═══════════════════════════ */
+{
+  id: 'g1', group: 'G', level: 'core',
+  q: 'Why two or three rounds? Why increase stringency between them?',
+  qcn: '为什么两到三轮？为什么每轮加压？',
+  beats: [
+    '一轮不够：门必须设宽才不丢多样性，宽门就意味着带进假阳性',
+    '多轮：每轮的假阳性是随机的，真阳性是可重复的 —— 重复富集就把它们分开了',
+    '加压的理由：上一轮的赢家已经比原始群体抗切，用同样条件就没有选择压了',
+    '太多轮的风险：多样性塌缩、生长快的克隆接管',
+    '两到三轮是经验上的甜点'
+  ],
+  script: 'One round cannot be both permissive enough to keep diversity and stringent enough to be clean, so I set a wide gate and accept false positives, then rely on iteration to remove them: a cell that got through by chance is unlikely to get through again, whereas a genuinely resistant one will. Stringency has to increase because the population changes — after round one the survivors are already more resistant than the starting library, so the original conditions no longer discriminate between them. And I stop at two or three because every extra round costs diversity and gives more time for fast-growing clones to take over regardless of their linker.',
+  cn: '第一句是关键的**统计论证**：假阳性是随机事件，随机事件不重复；真阳性是性质，性质可重复。多轮筛选本质上是**用重复性把信号和噪声分开**。\n\n这个论证可以用概率讲：如果一个细胞每轮有 p 的概率蒙混过关，三轮之后是 p³。p = 0.05 的话，三轮后是 1.25×10⁻⁴。而真阳性每轮都接近 1。\n\n"population changes so the conditions must change" 是动态选择压的正确表述，比"每轮加压"这句口号有内容得多。',
+  followups: [
+    { q: 'What is the cost of a fourth round?', a: '多样性。每一轮都在丢序列，四轮之后可能只剩几个克隆，你就失去了"哪些序列特征重要"的统计信息——只剩几个孤立的赢家，看不出规律。而深度测序的价值恰恰在于看**趋势**，不是看冠军。' },
+    { q: 'Could you sequence after every round?', a: '应该。round 0、1、2、3 全测，才画得出每条序列的富集轨迹。只测最后一轮你只知道谁赢了，不知道它是稳步上升还是最后一轮偶然跳上来的。' }
+  ],
+  lab: '技术 6.7。你的 expression sort 就是三轮。'
+},
+{
+  id: 'g2', group: 'G', level: 'core',
+  q: 'Sanger or NGS here? Why?',
+  qcn: '这里用 Sanger 还是 NGS？为什么？',
+  beats: [
+    '文库层面：NGS —— 你要的是频率，不是序列',
+    '单克隆验证：Sanger —— 一条一条读，读长够',
+    '而且你的随机化区域只有 15 bp，Illumina 短读长完全够',
+    'NGS 才能给"富集轨迹"：每条序列在每一轮的频率',
+    '两者是分工，不是二选一'
+  ],
+  script: 'Both, for different jobs. For the pools I need NGS, because what I want is not a sequence but a frequency distribution — how often each linker variant appears in round zero, one, two, three. That is a counting problem, and only deep sequencing counts. The randomised region is only fifteen base pairs, so short Illumina reads are more than enough; read length is not a constraint here. Then for the handful of final candidates I use Sanger on individual colonies, because I want an unambiguous full-length read of the whole cassette to confirm nothing else changed.',
+  cn: '"NGS 是计数问题，Sanger 是读序问题" —— 这个框架比列表格好用得多。\n\n你手册里的对比表值得记：\n| | Sanger | NGS |\n|---|---|---|\n| 原理 | 双脱氧链终止 + 毛细管电泳 | 边合成边测序，大规模并行 |\n| 读长 | 500–1000 bp | 150–300 bp (Illumina) |\n| 通量 | 一次一条 | 百万条 |\n| 你的用途 | 单克隆验证 | 文库频率分析 |\n\n这里有一个**对你特别有利的点**：15 bp 的随机化区正好适合短读长。Illumina 的短读长在你 RBD 重组文库里是个问题（重组体长、断点要跨读长定位），在这里完全不是问题。能指出这个对比，说明你理解读长约束是**任务相关**的，不是绝对的。',
+  followups: [
+    { q: 'What is the sequencing depth you need?', a: '要能可靠估计频率，每个变体至少几十条 reads。文库多样性 3×10⁶ 显然测不全，但你不需要测全——你要看的是**富集起来的那些**，它们频率高，深度 10⁷ reads 就足够把频率跨越三四个数量级的变化看清楚。' },
+    { q: 'Any PCR bias concerns?', a: '有。扩增测序文库时循环数要尽量少（一般 ≤20），否则 GC 含量或二级结构不同的模板会被差异扩增，把频率扭曲。而且要做 technical replicate（同一份 DNA 独立扩增两次）来估计这个噪声。' }
+  ],
+  lab: '技术 10.2。你两种都做过：KYB 系列 NGS 做文库、LCJ471–497 共 27 个单克隆做 Sanger。直接引用。'
+},
+{
+  id: 'g3', group: 'G', level: 'killer',
+  q: '"Enriched" relative to what? What is your baseline?',
+  qcn: '"富集"是相对于什么？基线在哪？',
+  beats: [
+    '★ 基线是 round 0：诱导后、pre-sort 之后、但未经蛋白酶挑战的文库',
+    '不能拿理论期望频率当基线 —— 建库本身就不均匀',
+    '富集比 = 频率(round N) / 频率(round 0)，通常取 log₂',
+    '还需要第二个基线：mock-treated（走完所有步骤但不加酶）',
+    '两个基线的差别：round 0 扣掉建库偏倚；mock 扣掉生长和操作偏倚'
+  ],
+  script: 'Round zero — the induced, pre-sorted library before any protease. Not the theoretical expectation, because library construction is never uniform: oligo synthesis has position-dependent bias and transformation is a random sample, so some variants start at ten times the frequency of others. Enrichment has to be a ratio of observed to observed, usually expressed as log two of frequency in round N over frequency in round zero. And I need a second baseline as well: a mock-treated arm that goes through every step — induction, staining, sorting on the same gate, regrowth — but with no protease. That tells me what changes from growth and handling alone, and anything enriched in both arms is not about protease resistance.',
+  cn: '★★ 这是原文的一个**真空白**。第 14 段写了 "sequences that become enriched during selection"，但没说相对于什么。考官问这一刀，是在测你懂不懂"富集"是个**相对量**。\n\n两个基线的分工必须说清楚：\n- **round 0**：扣掉**建库偏倚**。寡核苷酸合成不是完美等比例的，转化是随机抽样的，所以起始频率本来就不均匀。\n- **mock-treated**：扣掉**生长和操作偏倚**。有些克隆就是长得快，有些在分选和洗涤中损失少。这些和蛋白酶无关，但会造成频率上升。\n\n**判据**：真正的抗性变体应该在处理组富集、在 mock 组不富集。两组都富集的 = 生长优势。这是一个干净的双臂设计。\n\n这一条完全对应 CLAUDE.md 第五条的精神：step13_schema.py 那个例子——一个看起来很强的结果（31/31, p=0.001）在正确的对照下消失了，然后照实报告。同样的纪律。',
+  followups: [
+    { q: 'What if a variant is enriched in both arms?', a: '那它是生长优势，不是抗性。要从候选里剔除，或者至少标记出来单独验证。这正是 mock 臂存在的意义——它把"看起来赢了"和"因为抗切而赢"分开。' },
+    { q: 'How many reads for round 0?', a: 'round 0 是最重要的一个样品，因为它是所有比值的分母，深度不够会让低频变体的分母噪声很大、富集比虚高。我会给 round 0 最高的测序深度，并且做重复。' }
+  ],
+  trap: '不要答 "相对于野生型"。野生型 linker 在 NNK 文库里出现的概率是 (1/32)⁵ ≈ 3×10⁻⁸ —— 它基本不在你的文库里。基线必须是 round 0 的实测频率分布。',
+  lab: '技术 10.7。你的 KYB403–407 就是 unsort 对照——同一个角色。'
+},
+{
+  id: 'g4', group: 'G', level: 'deep',
+  q: 'List the controls that would convince you the enrichment is real.',
+  qcn: '哪些对照能让你相信富集是真的？',
+  beats: [
+    '① round 0 深度测序 —— 建库偏倚的基线',
+    '② mock-treated 平行臂 —— 生长/操作偏倚的基线',
+    '③ spike-in 参考株（固定 linker + 不同荧光标记）—— 监测整体存活和 ratio 漂移',
+    '④ 野生型 (G4S) linker 单克隆，和文库平行处理 —— 阴性参照',
+    '⑤ 一条已知抗切序列（如富 Pro）—— 阳性参照，证明检测得出差异',
+    '⑥ 技术重复：独立的第二次分选，看是不是富集同一批序列'
+  ],
+  script: 'Six. Round zero sequenced deeply, as the construction-bias baseline. A mock-treated arm through every step without protease, as the growth-and-handling baseline. A spike-in reference strain with a fixed linker and a constitutive fluorescent marker, added at a known ratio, so I can track overall survival and any drift in the ratio readout across rounds. A wild-type G4S clone processed alongside as a negative reference — it should lose c-Myc. A proline-rich clone as a positive reference, to prove the assay can detect a difference at all. And a full technical replicate: an independent second selection from the same round-zero library. If the two replicates enrich overlapping sets of sequences, that is the strongest evidence; if they do not, I have been reading drift.',
+  cn: '★ 第 ⑥ 条（独立重复）是**最强的证据**，也是最少人提的。\n\n为什么最强：前五个对照都在控制**已知**的混淆因素。独立重复控制的是**未知**的——如果两次独立选择富集出重叠的序列集合，那不管有什么你没想到的偏倚，它至少是可重复的。这是从"我排除了我能想到的解释"升级到"结果本身是稳定的"。\n\n第 ⑤ 条（阳性对照）也值得强调：如果你的 assay 连一条明显抗切的序列和野生型都分不开，那阴性结果毫无意义——你不知道是"没有抗性变体"还是"我测不出来"。**阳性对照定义的是检测下限。**\n\n这一整题是 CLAUDE.md 第三条"no silent failures"的口试版：每一步都要有能证明它真的发生了的断言。',
+  followups: [
+    { q: 'Which one would you run first if you only had time for one?', a: 'mock-treated 臂。因为没有它，你连"蛋白酶到底起没起作用"都不知道，其它所有对照都建立在这个前提上。' }
+  ],
+  lab: '技术 6 + 技术 10.7。你的 unsort 对照（KYB403–407）就是 mock 臂的同构物。'
+},
+
+/* ═══════════════════════ H · 非天然氨基酸 / pBpa ═══════════════════════ */
+{
+  id: 'h1', group: 'H', level: 'core',
+  q: 'How does amber suppression work? What are the components?',
+  qcn: '琥珀密码子抑制是怎么工作的？需要哪些组件？',
+  beats: [
+    '把目标位点的密码子改成 TAG（amber）',
+    '引入一对正交组件：① 正交 tRNA，反密码子 CUA，识别 TAG；② 正交 aaRS，只给这个 tRNA 上载 ncAA',
+    '培养基里补加 ncAA',
+    '核糖体读到 TAG 时，正交 tRNA 竞争性地插入 ncAA，而不是被释放因子终止',
+    '所以效率取决于和释放因子的竞争'
+  ],
+  script: 'You recode the position you want as TAG, the amber stop codon, and then supply two orthogonal components: a tRNA whose anticodon is CUA so it reads TAG, and an aminoacyl-tRNA synthetase that charges that tRNA — and only that tRNA — with the non-canonical amino acid, which you feed in the medium. When the ribosome reaches TAG, the suppressor tRNA competes with the release factor. If the tRNA wins, the ncAA is incorporated and translation continues; if the release factor wins, you get a truncated protein. So suppression efficiency is fundamentally a kinetic competition, and it is never one hundred percent.',
+  cn: '最后那句是核心洞察：**amber suppression 是一场竞争，不是一个开关**。\n\n在 E. coli 里竞争对手是 RF1；在真核（酵母、哺乳动物）里是 **eRF1**，而且 eRF1 识别全部三个终止密码子，还是必需基因，不能像 E. coli 那样敲掉 RF1 来提高效率。所以真核里的抑制效率通常更低。\n\n**"正交"的两层含义**（h2 会深挖）：\n1. 正交 aaRS 不能给宿主的任何 tRNA 上载\n2. 宿主的任何 aaRS 不能给正交 tRNA 上载\n两个方向都要满足，否则 ncAA 会被随机掺进整个蛋白质组，或者正交 tRNA 会被载上天然氨基酸。\n\n对你的构建体还有一个**特别的问题**要主动提：你的 c-Myc 后面就是终止密码子（原文里 Myc 后接 TAA TAG）。如果你在 linker 引入 amber，同时又有 amber 抑制系统在，那真正的终止密码子也可能被读通。所以真正的终止子应该用 **TAA**，而且最好串两个（TAA TAA）。',
+  followups: [
+    { q: 'What competes with the suppressor tRNA?', a: '释放因子。E. coli 里是 RF1（识别 UAG 和 UAA）；真核里是 eRF1（识别全部三个终止密码子）。E. coli 可以敲掉 RF1 大幅提高效率（那是 genomically recoded organism 的思路），酵母不行，eRF1 是必需的。' },
+    { q: 'Your own stop codon is TAG. Is that a problem?', a: '★ 是的，很好的问题。如果 amber 抑制系统在，构建体真正的终止密码子如果也是 TAG 就会被读通，产生 C 端延长的蛋白。所以要把终止子换成 TAA，而且串联两个（TAA TAA）来降低通读。这个细节说出来很加分。' }
+  ],
+  lab: null
+},
+{
+  id: 'h2', group: 'H', level: 'killer',
+  q: 'You cite a Methanocaldococcus jannaschii pair, and reference [3] is titled "…the genetic code of Escherichia coli". You are working in yeast. Explain.',
+  qcn: '你引的是 M. jannaschii 的对，文献 [3] 标题写着大肠杆菌。你做的是酵母。解释一下。',
+  beats: [
+    '★ 先承认：正交性是相对宿主定义的，换宿主就要换对',
+    'MjTyrRS/tRNA 对是在 E. coli 里正交的 —— 这正是 Chin 2002 做的',
+    '在 S. cerevisiae 里，标准的正交对是 E. coli TyrRS / tRNA^Tyr_CUA（Chin et al., Science 2003）',
+    '因为古菌的 TyrRS 和真核的 tRNA^Tyr 识别元件更接近，正交性在酵母里不成立',
+    '所以我在酵母里应该用 E. coli 来源的对，我的写法在这一点上不严谨'
+  ],
+  script: 'That is a fair hit, and I should correct it. Orthogonality is defined relative to a host — a pair is orthogonal only if the host\'s synthetases ignore its tRNA and its synthetase ignores the host\'s tRNAs. The Methanocaldococcus jannaschii TyrRS/tRNA pair is orthogonal in E. coli, which is exactly what reference three demonstrates. For Saccharomyces cerevisiae the established pair is the E. coli TyrRS with E. coli tRNA-Tyr-CUA, from the 2003 Science paper by the same group — the archaeal synthetase does not stay orthogonal against the eukaryotic translation machinery. So in yeast I should have specified the E. coli-derived pair. The rest of the design — amber codon, pBpa fed in the medium, UV crosslinking — is unchanged; only the source organism of the orthogonal pair is wrong.',
+  cn: '★★★ **这是全篇最可能被抓的硬伤，必须练到能平静地接住。**\n\n核心概念：**正交性不是分子的属性，是分子和宿主之间关系的属性。** 换宿主，正交性就要重新验证。一般规律是"选进化上离宿主远的来源"：\n- 在 **E. coli**（细菌）里 → 用**古菌**来源（MjTyrRS）\n- 在 **酵母/哺乳动物**（真核）里 → 用**细菌**来源（EcTyrRS）\n\n这个规律本身就是很漂亮的答案——它解释了为什么不能简单照搬。\n\n**接话的姿态**（这决定了这一刀是扣分还是加分）：\n1. 立刻承认，不辩解（"That is a fair hit"）\n2. 说出正确答案，并解释**为什么**是这样（正交性相对宿主）\n3. 明确划定错误的边界：只有来源生物错了，设计逻辑没错\n\n第 3 步很重要——它防止考官把这一个错误扩大成"整段都没想清楚"。\n\n**诚实说明**：我对 "酵母用 E. coli TyrRS/tRNA 对"（Chin et al., Science 2003, 301:964）这一点有较高把握，但你上考场前值得自己核一遍原文——CLAUDE.md 里说了，不能核实的引用要标出来而不是放过去。这条我标出来了。',
+  followups: [
+    { q: 'What is the general rule for picking an orthogonal pair?', a: '选一个进化距离宿主远的来源。tRNA 的识别元件（identity elements）在进化上保守，所以近缘生物的 aaRS/tRNA 会交叉识别。细菌宿主用古菌来源，真核宿主用细菌来源——这就是为什么 Mj 对在 E. coli 里行、在酵母里不行。' },
+    { q: 'How would you verify orthogonality experimentally?', a: '两个方向各测一个：① 只转 aaRS、不加 ncAA，看有没有把天然氨基酸掺进 amber 位点（如果有，说明它认了宿主的氨基酸或宿主 tRNA）；② 只转 tRNA、不转 aaRS，看 amber 位点有没有被读通（如果有，说明宿主的 aaRS 给它上载了）。两个对照都干净，才叫正交。' }
+  ],
+  trap: '★ 千万别硬撑说 "M. jannaschii 的对在酵母里也能用"。承认错误 + 给出正确答案 + 解释原理，这一刀会变成你全场最亮的时刻。硬撑则会变成最糟的时刻。',
+  lab: null
+},
+{
+  id: 'h3', group: 'H', level: 'core',
+  q: 'What does pBpa do under UV? Give me the chemistry.',
+  qcn: 'pBpa 在紫外下干什么？讲化学机制。',
+  beats: [
+    'pBpa = p-benzoyl-L-phenylalanine，侧链是二苯甲酮（benzophenone）',
+    '~365 nm 长波紫外激发',
+    '羰基 n→π* 跃迁 → 系间窜越到三线态双自由基',
+    '三线态羰基氧夺取邻近的 C–H 氢原子',
+    '两个自由基复合 → 形成共价 C–C 键',
+    '关键优势：如果附近没有 C–H 可夺，它会回到基态，可以反复尝试'
+  ],
+  script: 'The side chain is a benzophenone. Long-wave UV around 365 nanometres promotes the carbonyl to an n-to-pi-star excited state, which crosses over to a triplet diradical. The triplet carbonyl oxygen abstracts a hydrogen atom from a nearby aliphatic C–H bond, and the two resulting radicals recombine to form a covalent carbon–carbon bond. Two things make benzophenone good for this. First, 365 nanometres is gentle — it does not damage the protein or the cell the way shorter UV does. Second, it is reversibly activatable: if there is no C–H within reach, it simply relaxes back to the ground state and can be excited again, so it keeps sampling until it finds a partner. An aryl azide, by contrast, fires once and is consumed.',
+  cn: '★ 那个 "reversibly activatable" 的优势是 benzophenone 化学最漂亮的一点，**一定要说**——它是 benzophenone 成为标准光交联剂的原因。\n\n对比其它光交联基团：\n- **芳基叠氮 (aryl azide)**：短波 UV (254–300 nm)，产生氮宾，一次性消耗，而且短波伤蛋白\n- **双吖丙啶 (diazirine)**：~350 nm，产生卡宾，反应性极高（连 O–H 都插入），但半衰期极短、也是一次性\n- **二苯甲酮 (benzophenone)**：365 nm，可反复激发，选择性夺 C–H\n\n**作用距离约 3 Å** —— 这意味着交联报告的是真正的紧密接触，不是"附近"。这个数字值得记，因为它决定了 h4 里"交联到什么"的答案。',
+  followups: [
+    { q: 'Why 365 nm and not 254?', a: '254 nm 会被蛋白质的芳香族残基和核酸强烈吸收，造成光损伤（想想 UV 灭菌的原理）。365 nm 在生物分子的吸收窗口之外，细胞能耐受几分钟到几十分钟的照射。' },
+    { q: 'What is the reach?', a: '约 3 Å——非常短。所以交联成功意味着真正的分子接触，不是"在同一个区域"。这既是优点（特异性高）也是限制（必须把 pBpa 放对位置）。' }
+  ],
+  lab: null
+},
+{
+  id: 'h4', group: 'H', level: 'deep',
+  q: 'What exactly would pBpa crosslink to? And how would you know it worked?',
+  qcn: 'pBpa 到底交联到什么上？你怎么知道成功了？',
+  beats: [
+    '★ 先诚实：原文写的是 "the nearby scaffold"，这不够具体',
+    '候选伙伴：Aga2p 自身、Aga1p、或者细胞壁的甘露糖蛋白',
+    '3 Å 的作用距离意味着必须真的贴着——不能靠猜，要试',
+    '实际做法：在 linker 里扫描多个位置，看哪个位置交联效率最高',
+    '怎么知道成功：① 蛋白酶挑战后 c-Myc 信号保住了；② western 上出现高分子量的移位条带；③ 关键——不照 UV 的对照必须没有这个效果'
+  ],
+  script: 'Honestly, my write-up says "the nearby scaffold", which is not specific enough. The realistic partners are Aga2p itself, Aga1p, or a cell wall mannoprotein — but the reach is only about three ångströms, so I cannot reason my way to the right position. I would scan: put the amber codon at several different positions along the linker and measure which one gives the best crosslink. As for knowing it worked, three readouts. Functionally, the c-Myc signal should survive the protease challenge with UV and not without. Biochemically, a western blot should show a shifted, higher-molecular-weight band appearing only after irradiation. And the essential control is the minus-UV sample, processed identically — if the retention is there without UV, the effect is not photocrosslinking.',
+  cn: '★ 开头就承认 "the nearby scaffold is not specific enough" 是正确姿态。这是原文里一个真实的含糊处，考官读到 "nearby scaffold" 一定会问 "nearby what"。\n\n**为什么必须扫描而不是设计**：3 Å 是原子接触的距离。你无法从序列推断展示构建体上哪个残基恰好贴着 Aga1p 的哪个残基——那需要结构。所以正确做法是把 amber 位点在 linker 上逐个移动（position scanning），实验找出哪个位置有效。这本身就是一个小型的定向进化。\n\n**−UV 对照是不可协商的**。如果不照 UV 也保住了 c-Myc，那说明是别的原因（比如 pBpa 这个大疏水侧链本身就降低了蛋白酶可及性）。这个对照把"光化学交联"和"侧链效应"分开。\n\n还有一个漂亮的**反向逻辑**：如果 pBpa 交联成功了，那被交联住的部分**即使 linker 被切了也还留在细胞上**。所以你实际上是在测 "切了但没掉"，这和主筛选测的"没被切"是不同的机制。这一点值得主动讲——它说明 ncAA 这条路是**正交的第二道保险**，不是同一个东西的重复。',
+  followups: [
+    { q: 'Why is this a second mechanism rather than more of the same?', a: '主筛选让 linker **不被切**；pBpa 让构建体**即使被切也不掉**。第一个是抗性，第二个是冗余锚定。两者失效模式不同，所以叠加起来是真的更稳，而不是同一保险买两份。' },
+    { q: 'What if crosslinking to Aga1p disrupts display?', a: '有可能——把柔性 linker 钉死在近端会严重限制抗原的活动范围，正好落进 Possible Problem #1（i1）。所以交联后必须重新测抗原可及性。这条路径不是免费的。' }
+  ],
+  lab: null
+},
+{
+  id: 'h5', group: 'H', level: 'deep',
+  q: 'Why did you keep the ncAA work as a follow-up rather than part of the selection?',
+  qcn: '为什么把非天然氨基酸那部分放成后续，不放进筛选？',
+  beats: [
+    '效率问题：amber 抑制不完全，一部分细胞得到截短蛋白',
+    '截短的表型（HA+/c-Myc−）和"被切断"完全一样 —— 混淆读数',
+    '而且每个细胞的抑制效率有差异，会给比值加一层与 linker 无关的噪声',
+    '还有：额外的正交对质粒 + ncAA 培养基 = 多一层文库层面的变量',
+    '所以先用天然氨基酸把 linker 选定，再在赢家上做 ncAA —— 一次改一个变量'
+  ],
+  script: 'Because it would corrupt the readout. Amber suppression is never complete, so a fraction of cells terminate at the amber codon and make a truncated construct — HA positive, c-Myc negative. That is indistinguishable from a cleaved linker. Worse, suppression efficiency varies cell to cell, so it would add variance to the ratio that has nothing to do with protease resistance. On top of that it means a second plasmid for the orthogonal pair and a special medium, both of which add library-level variables. The clean design is to select the linker with canonical amino acids, where the readout means what I say it means, and then introduce pBpa into the winner. One variable at a time.',
+  cn: '★ "amber 截短的表型和被切断的表型完全一样" 是这题的核心，而且是一个**很锐利的观察**。\n\n想清楚：两种情况下细胞都是 HA 阳性、c-Myc 阴性。流式分不出来。所以如果在筛选阶段引入 amber，你的低比值群里混着两种完全不同的东西，选择压就被稀释了。\n\n第二层（抑制效率的细胞间差异）更微妙：即使抑制成功的细胞，成功的程度也不一样，这直接给比值加了一层噪声——而且这层噪声和 linker 序列无关，纯粹是干扰。\n\n**"one variable at a time"** 是实验设计的基本纪律，这里用得恰到好处。原文里那句 "I would treat this as a follow-up rather than part of the main selection" 本身就是对的判断，口试时要能说出**为什么**对。',
+  followups: [
+    { q: 'Could you select for high suppression efficiency at the same time?', a: '技术上可以（比值高既可能是 linker 好、也可能是抑制效率高），但那正是问题所在——你会同时在选两个性质，而且分不清哪个在起作用。如果真想要，应该分开做：先固定 linker，再单独筛抑制效率。' }
+  ],
+  lab: null
+},
+
+/* ═══════════════════════════ I · 对照与失败 ═══════════════════════════ */
+{
+  id: 'i1', group: 'I', level: 'core',
+  q: 'Your first problem: a rigid linker protects itself by hiding the antigen. How do you catch that?',
+  qcn: '你的问题一：刚性 linker 靠把抗原藏起来自保。怎么抓出来？',
+  beats: [
+    '关键洞察：选择压和真实目标错位了',
+    '我选的是"c-Myc 留下来"，我要的是"抗原露得出来"',
+    '抓法：用抗-抗原的构象特异性抗体染选出来的单克隆',
+    '如果抗原信号相对野生型明显下降 → 剔除',
+    '更好的办法：把这个测量提前，做成分选的第三个通道'
+  ],
+  script: 'The problem is a mismatch between what I select for and what I actually want: I select for c-Myc surviving, but what I want is an antigen that an immune system can see. A linker that pulls the antigen down against the cell wall could score perfectly and be useless. I catch it by staining the selected clones with a conformation-specific antibody against the antigen itself and comparing to the wild-type linker — anything with substantially reduced accessibility gets excluded. Better still, I could bring that measurement forward and make it a third colour during the sort, so I select on the ratio and on antigen accessibility simultaneously, instead of selecting first and filtering afterwards.',
+  cn: '★ 最后那个升级（**把抗原可及性做成第三个通道，在分选时就一起筛**）是这题的高分点。原文只写了"筛完再测"，但更好的设计是"筛的时候就一起测"。\n\n为什么更好：事后筛选只能从已经富集的东西里挑，如果所有富集出来的都藏抗原，你就一无所获。三色分选直接把"抗切 AND 可及"作为联合条件，选择压从一开始就指向真正的目标。\n\n代价要诚实说：三色需要第三个荧光基团、更多补偿、以及一个好的构象特异性抗-抗原抗体（后者不一定有）。所以这是"如果条件允许"的升级，不是无脑更优。\n\n**术语值得用**：这是典型的 "you get what you select for" —— 定向进化里最著名的教训。选择压永远精确地给你你写下的那个条件，不是你心里想的那个。',
+  followups: [
+    { q: 'What if no conformational antibody exists for your antigen?', a: '退而求其次：用受体或已知的中和抗体做探针（如果抗原有天然结合伙伴），或者用多克隆血清测总体可及性。再不行就用蛋白酶可及性本身作为间接指标——但那就绕回原问题了，要承认这是个限制。' },
+    { q: 'Is a shorter linker necessarily worse for accessibility?', a: '不一定。有文献显示 linker 长度对展示蛋白的功能影响是非单调的。所以不能预设"短=差"，要测。这也是为什么要测量而不是排除掉短的候选。' }
+  ],
+  lab: '技术 7（CytoFLEX 分析单克隆）+ 技术 1。你验证单克隆的流程正好可以用来做这个可及性测量。'
+},
+{
+  id: 'i2', group: 'I', level: 'core',
+  q: 'Your second problem: selection acts on the cell, not the linker. Design that control precisely.',
+  qcn: '你的问题二：选择作用在细胞而不是 linker 上。把那个对照设计具体。',
+  beats: [
+    'spike-in 参考株：固定的野生型 linker + 组成型表达的 mCherry（或其它不占用你两个通道的荧光蛋白）',
+    '按已知比例（比如 1%）掺进文库，全程跟着走',
+    '它同时报告两件事：① 每轮之后它占的比例 = 整体存活/回收；② 它自己的 c-Myc/HA = 读数有没有漂移',
+    '如果它的比例暴涨 → 文库整体死得比它多 → 选择在细胞层面起作用',
+    '如果它的 ratio 每轮都不同 → 染色/仪器漂移，不是生物学'
+  ],
+  script: 'A spike-in reference strain: fixed wild-type linker, plus a constitutive fluorescent protein in a channel I am not using — mCherry, say, since my two tags are in the 488 and 640 channels. I add it to the library at a known fraction, say one percent, and it goes through every round with everything else. It gives me two independent readouts. Its fraction after each round tells me about general survival — if the reference goes from one percent to twenty, the library is dying faster than the reference and something cell-level is being selected. And its own c-Myc-to-HA ratio should be constant across rounds; if it drifts, that is staining or instrument drift, not biology, and I need to renormalise. So it is simultaneously a survival control and an internal standard for the readout.',
+  cn: '★ 这题的关键是把原文那句含糊的 "a different fluorescent marker" 变成一个**可执行的设计**，并说清它**同时提供两个独立读数**。\n\n两个读数的分工：\n1. **比例变化** → 群体层面：文库整体是不是被非特异地杀掉了\n2. **自己的 ratio** → 技术层面：染色和仪器有没有漂移\n\n第二个读数尤其重要，因为你的选择跨越多轮、多天，染色批次和仪器设置都会变。一个 ratio 应该恒定的内参，让你能把每一轮的数据放到同一个尺度上比较。\n\n**荧光通道选择**要说清楚：mCherry（561 nm 激发）不占用 488 和 640，所以不干扰你的两个 tag 通道。这个细节显示你在设计层面考虑了兼容性。\n\n**加多少**：1% 是个好起点——足够被可靠计数（分选 20,000 事件里有 200 个），又不至于占掉太多文库容量。',
+  followups: [
+    { q: 'What if the reference strain itself behaves atypically?', a: '合理的担心。可以掺两株不同的参考（一株野生型 linker、一株已知抗切的），互相印证。如果两株给出一致的存活趋势，那趋势就是真的。' },
+    { q: 'How does this differ from the mock-treated arm?', a: 'mock 臂是**平行的另一管**，回答"不加酶会怎样"。spike-in 是**同一管里的内参**，回答"这一管里非特异效应有多大"。前者控制批次间，后者控制批次内。两个都要，不能互相替代。' }
+  ],
+  lab: '技术 6（多色分选）+ 技术 1（荧光标记）。'
+},
+{
+  id: 'i3', group: 'I', level: 'deep',
+  q: 'Suppose almost everything dies in round one. What do you do?',
+  qcn: '假设第一轮几乎全死了。你怎么办？',
+  beats: [
+    '先分清两件事：细胞死了，还是 c-Myc 都掉了？两者处理方式完全不同',
+    '如果是细胞死了 → pH/温度太狠 → 降低胃段强度，或先测存活曲线',
+    '如果是细胞活着但都低比值 → 蛋白酶太狠 → 降浓度/缩时间',
+    '不要一上来就重建文库 —— 先滴定（e5）',
+    '如果滴定后温和条件下仍然没有分离出的高比值群 → 那才是文库问题'
+  ],
+  script: 'First I would find out which "died" I am looking at, because they need opposite responses. If the cells are actually dead or lysed, that is the acid and temperature, and I fix it by shortening the gastric stage or checking a viability curve — and I would know because the FSC/SSC plot loses the intact-cell population and gains debris. If the cells are intact but the whole population has collapsed to low ratio, that is the proteases being too aggressive, and I reduce concentration or time. Only if a properly titrated, mild challenge still produces no separated high-ratio population would I conclude the library is the problem — and then the fix is more positions, or a biased alphabet, or simply a bigger transformation.',
+  cn: '★ 这题真正在考的是 **诊断能力**：同一个现象（"全死了"）有两个完全不同的原因，处理方式相反。能先区分再行动，比直接给方案更值钱。\n\n**区分的依据是 FSC/SSC 图**：细胞死亡/裂解 → 完整细胞群消失、碎片增多；细胞完好但被切 → 完整细胞群还在，只是都往低比值移。这是两个可以直接看出来的不同图像。\n\n这也正是 CLAUDE.md 里那条纪律的应用：**"一个信号符合某个已知失败模式，不代表原因就是那个"** —— 先确认证据支持这个具体动作，再动手。\n\n原文的答案（"先测一系列浓度和时间"）是对的，但口试要能说出**先诊断再滴定**这个更完整的顺序。',
+  followups: [
+    { q: 'How would the FSC/SSC plot tell you?', a: '完整酵母在 FSC/SSC 上是一个致密的群。裂解后这个群缩小甚至消失，左下角碎片区膨胀。所以只要看第一个门里还剩多少事件，就知道是不是细胞层面的问题。' }
+  ],
+  lab: '技术 6.6（FSC/SSC 圈活细胞群）。'
+},
+{
+  id: 'i4', group: 'I', level: 'deep',
+  q: 'What single experiment would most convincingly falsify your whole scheme?',
+  qcn: '哪一个实验最能证伪你的整个方案？',
+  beats: [
+    '这样一个实验：拿一条已知抗蛋白酶的 linker 和野生型 (G4S)，分别做成单克隆',
+    '走完整套流程：诱导 → 挑战 → 灭活 → 染色 → 流式',
+    '看它们的 c-Myc/HA 分布分不分得开',
+    '如果分不开 → 整个读数不成立，后面所有都是白做',
+    '这是必须最先做的实验，不是最后'
+  ],
+  script: 'Take two clones — the wild-type G4S linker and one with a linker I have good reason to think is resistant, a proline-rich one — and run both through the entire pipeline: induction, gastric stage, intestinal stage, quench, stain, flow. If their c-Myc-to-HA distributions do not separate, then the readout does not resolve the property I am selecting on, and no amount of library or sorting will fix that. Everything downstream is built on that one assumption. So it is not the experiment I would do to falsify the scheme at the end — it is the first experiment I would do, before building a library at all.',
+  cn: '★★ "这是第一个实验，不是最后一个" —— 这句话是这题的全部价值。\n\n这是**assay 开发先于文库构建**的原则。绝大多数定向进化项目失败不是因为文库不好，是因为读数分辨不出要选的性质。先用两个已知的极端把 assay 的**动态范围**测出来，再花钱建库。\n\n它同时充当：\n- **阳性对照**（抗切克隆）\n- **阴性对照**（野生型）\n- **动态范围测定**（两者的分离度就是你的信噪比）\n\n如果两者分开得很好（比如分布中位数差 5 倍），你就知道 assay 能分辨。如果只差 20%，那这个 assay 分辨不了细微差别，选择效率会很低。\n\n**这也回答了"你的阈值有什么证据"**——门的位置应该放在这两个已知群体之间的空隙里。CLAUDE.md 第一条：阈值在两个分离群体之间的空隙里才不敏感。',
+  followups: [
+    { q: 'Where would you get a "known resistant" linker?', a: '文献里有报道的抗蛋白酶肽段，或者干脆自己设计一条富 Pro 的（按 c2 的机制，它应该抗切）。它不需要是最优的——只需要和野生型有可检测的差别，用来定义动态范围。' },
+    { q: 'What if they separate but only slightly?', a: '那说明 assay 能分辨但分辨率低。可以加压（更狠的挑战放大差别）、或者改进读数（比如换更亮的荧光基团提高信噪比）。也要相应调低对第一轮富集倍数的预期。' }
+  ],
+  lab: '技术 7（CytoFLEX：分析不分选，正适合做这种 assay 开发）。'
+},
+{
+  id: 'i5', group: 'I', level: 'deep',
+  q: 'After three rounds one sequence dominates the pool. Are you happy?',
+  qcn: '三轮之后一条序列占了绝大多数。你高兴吗？',
+  beats: [
+    '警惕，不是高兴',
+    '单一序列主导可能是真赢家，也可能是"跑得快的搭便车者"',
+    '第一件事：查它在 mock 臂里的频率。mock 里也富集 → 生长优势，不是抗性',
+    '第二件事：查它的 linker 序列合不合理（有没有终止子、有没有丢掉随机化区）',
+    '第三件事：重新构建这个单克隆，从头跑一遍 assay 验证',
+    '而且真正有信息量的不是冠军，是排名前 50 的共同特征'
+  ],
+  script: 'Wary, not happy. A single dominant sequence is as consistent with a fast-growing hitchhiker as with a genuine winner. So: first, look up its frequency in the mock-treated arm — if it enriched there too, it is growth, not resistance. Second, check the sequence itself makes sense: no stop codon, the randomised region intact, no vector artefact. Third, rebuild that clone from scratch and re-run the assay on it in isolation, because enrichment in a pool and performance as a clone are different claims. And honestly, the most informative output is not the champion at all — it is what the top fifty sequences have in common. One sequence is an anecdote; a shared motif across fifty independently enriched sequences is a result.',
+  cn: '★★ 最后那句是这一整组题里最重要的科学判断：**一条序列是轶事，五十条序列的共同特征才是结果。**\n\n这直接对应 CLAUDE.md 里那条已经犯过的错：\n> "报告了一个按 count 排序的频率表。它读起来像是所有东西都塌缩到两对亲本上了。实际上那两对里面包含 10 个和 8 个不同的序列、断点位置不同——是独立事件。"\n\n同样的教训：**不要被计数排序骗了**。要看的是多样性和共同特征，不是谁的计数最高。\n\n"enrichment in a pool and performance as a clone are different claims" 也很关键——池子里的富集是相对的、受群体组成影响的；单克隆的性能是绝对的。必须单独验证。这也正是你自己 RBD 项目里做 27 个单克隆 Sanger 验证的原因。\n\n还有一个具体的**载体假象**要查：如果线性化不完全，残留的环状母本质粒会转化出**野生型 linker** 的克隆。这些克隆不带随机化区，如果它们碰巧长得快，就会主导池子——而且看起来像"选出了一条特定序列"。查序列就能立刻发现。',
+  followups: [
+    { q: 'What would a healthy result look like instead?', a: '几十到上百条不同序列显著富集，它们之间共享可识别的特征——比如某几个位置强烈偏好 Pro，或者整体电荷分布有规律。有 motif 才能说出"为什么抗切"，才有推广价值。单个赢家只能告诉你"这一条行"。' },
+    { q: 'How do you find the motif?', a: '把富集的序列按位置做频率矩阵（sequence logo），和 round 0 的频率比较。每个位置计算氨基酸的富集倍数，看哪些位置有强偏好、偏好什么性质（疏水性、电荷、体积）。这是深度突变扫描的标准分析。' }
+  ],
+  trap: null,
+  lab: '技术 10.7 + CLAUDE.md 里"频率表按 count 排序"那个已犯过的错。这是你的项目里真实踩过的坑，讲出来非常有说服力。'
+},
+{
+  id: 'i6', group: 'I', level: 'killer',
+  q: 'Your readout cannot distinguish cleavage in the linker from cleavage in the antigen. Does your selection still mean anything?',
+  qcn: '你的读数分不出切在 linker 还是切在抗原里。那你的选择还有意义吗？',
+  beats: [
+    '有意义，而且理由是干净的：变异只发生在 linker 上',
+    '抗原对所有变体完全相同 —— 它构成恒定背景，不是变量',
+    '所以变体之间比值的差异，只可能来自 linker 的差异',
+    '抗原的切割给所有细胞加了同一个底噪，降低动态范围，但不引入偏倚',
+    '代价要承认：它压缩了信噪比，可能让弱的差别测不出来'
+  ],
+  script: 'It still means something, and the argument is about where the variation is. The antigen is identical in every cell in the library — it is a constant, not a variable. So while cleavage inside the antigen certainly happens and certainly lowers c-Myc, it does so equally across all variants. It is a uniform background, not a confounder: differences in ratio between variants can only come from the one thing that differs between them, which is the linker. What it does cost me is dynamic range. If the antigen is heavily cleaved, everyone\'s c-Myc is low and the differences I am trying to resolve sit on top of a large common loss. That would show up as poor separation in the assay development experiment, and if it did, I would need a more protease-tolerant antigen or a shorter challenge.',
+  cn: '★★ 这是一记很聪明的刀，而且答案也很漂亮：**因果归属由变异源决定。**\n\n这是遗传学里的基本论证：如果两组之间只有一个变量不同，那么观察到的差异只能归因于那个变量。抗原是恒定的，所以它不可能造成变体之间的差异——它只能影响所有变体的共同水平。\n\n**混淆因素 vs 背景**的区别值得讲清楚：\n- **混淆因素 (confounder)**：和你的变量相关，会造成虚假的组间差异\n- **均匀背景 (uniform background)**：对所有组一样，降低信噪比但不造成虚假差异\n\n抗原切割是后者，不是前者。这个区分本身就是很强的统计思维。\n\n**但要诚实承认代价**：动态范围被压缩。如果抗原被切得很厉害，所有细胞的 c-Myc 都低，你要分辨的 linker 差异就淹没在这个共同损失里了。而且这个问题**会在 i4 的 assay 开发实验里暴露出来**——如果野生型和抗切对照分不开，可能就是这个原因。两题接得上。',
+  followups: [
+    { q: 'How would you check whether the antigen is being heavily cleaved?', a: 'western blot：挑战前后都跑，用抗-HA 探针看细胞上残留片段的分子量分布。如果出现一条比 linker 切割预期更长的中间片段，那就是抗原内部被切了。或者收上清做质谱，直接读切割产物的末端序列。' },
+    { q: 'Would a more stable antigen change your conclusions?', a: '不会改变选择的有效性（变异源还是只在 linker），但会提高动态范围，让弱的 linker 差异也测得出来。所以选一个本身较稳定的抗原是有好处的——这是设计层面的考虑，不是补救。' }
+  ],
+  trap: null,
+  lab: null
+},
+
+/* ═══════════════════════════ J · 大局与文献 ═══════════════════════════ */
+{
+  id: 'j1', group: 'J', level: 'core',
+  q: 'Reference [1], Boder and Wittrup 1997. What did it actually show?',
+  qcn: '文献 [1]，Boder 和 Wittrup 1997。它到底证明了什么？',
+  beats: [
+    '它建立了酵母表面展示这个系统本身',
+    '用 Aga2p 融合把蛋白展示到细胞壁上',
+    '关键：把展示和 FACS 定量分选结合起来',
+    '证明了可以从组合文库里筛出亲和力提高的变体',
+    '两个 tag 的双标记读数（展示量 + 结合）也是这篇确立的'
+  ],
+  script: 'It is the paper that established the system. They showed that a protein fused to Aga2p is displayed on the yeast cell wall at high copy number, that the display level and the binding of a fluorescent ligand can be measured independently on the same cell with two colours, and that FACS can then sort a combinatorial library on that basis and recover variants with improved affinity. The key conceptual contribution is the two-colour normalisation — measuring binding relative to display — which is exactly the logic my c-Myc-to-HA ratio uses, just applied to proteolysis instead of binding.',
+  cn: '★ 最后那句把这篇文献和你的设计接起来，**一定要说**。\n\nBoder & Wittrup 1997 确立的核心思想就是**双色归一化**：结合信号除以展示信号，才能比较不同细胞的亲和力。你的 c-Myc/HA 是同一个思想换了一个被测的性质（从"结合"换成"保留"）。\n\n这也是为什么你引这篇是对的——你不是在引"一个用了酵母展示的例子"，你是在引**你的读数逻辑的来源**。\n\n而且这个类比你自己天天在做（f1 的 lab 联动）：ACE2 结合 ÷ SpyTag 展示量。三件事是同一个骨架。',
+  followups: [
+    { q: 'What was the model system in that paper?', a: '他们用的是抗荧光素的 scFv（4-4-20）作为模型展示蛋白，并从随机突变文库里筛出亲和力提高的变体。scFv 是这个领域的标准测试对象，因为它小、有二硫键、能测结合。' }
+  ],
+  lab: '技术 5B.1。'
+},
+{
+  id: 'j2', group: 'J', level: 'core',
+  q: 'Reference [2], Chao 2006 — what kind of paper is it, and what did you take from it?',
+  qcn: '文献 [2]，Chao 2006 —— 这是什么类型的文章？你从里面取了什么？',
+  beats: [
+    '这是 Nature Protocols 的方法论文，不是发现',
+    '它把 Boder & Wittrup 的系统标准化成可重复的流程',
+    '我引它是为了 pCTCON2 构建体里 HA 和 c-Myc 的**位置**',
+    '正是这个几何（HA 近端、c-Myc 远端）让我的读数成立',
+    '引方法论文来支持一个构建细节，是正确用法'
+  ],
+  script: 'It is a Nature Protocols methods paper — it takes the Boder and Wittrup system and turns it into a standardised, reproducible workflow for antibody engineering: the pCTCON2 vector, induction conditions, staining, sorting strategy. What I took from it specifically is the architecture of the cassette: that HA sits between Aga2p and the insert and c-Myc sits at the C-terminus. That single geometric fact is what makes my ratio readout possible, so citing a protocol paper for a construct detail is, I think, the right use of it.',
+  cn: '这题在测你**知不知道自己引的是什么类型的文献**。方法论文和发现论文的引用理由不一样，说清楚这一点显示你的文献素养。\n\n"citing a protocol paper for a construct detail is the right use of it" —— 这句主动说明引用的恰当性，很好。\n\n注意 pCTCON2 里还有一些细节值得知道：TRP1 营养缺陷标记（所以用 SDCAA 缺色氨酸培养基筛选）、GAL1-10 双向启动子、2µ 复制起点（高拷贝）。能顺口带出来说明你真读过。\n\n**可能的追问**：如果考官问"你会不会照搬这个 protocol"，答案是不会——protocol 是为抗体亲和力成熟写的，你的选择压完全不同（蛋白酶而非结合），所以染色和分选可以照抄，挑战步骤是全新的。',
+  followups: [
+    { q: 'What is the selection marker on pCTCON2?', a: 'TRP1——色氨酸营养缺陷互补。所以用缺色氨酸的 SDCAA 培养基维持选择压，保证细胞不丢质粒。这也是为什么扩增培养基是 SDCAA 而不是 YPD。' },
+    { q: 'Would you follow the protocol as written?', a: '染色和分选部分基本可以照抄，那是成熟的。但蛋白酶挑战这一段在原 protocol 里根本不存在——那是我要新加的，也是唯一需要从零开发的部分（见 i4）。' }
+  ],
+  lab: '技术 5B。'
+},
+{
+  id: 'j3', group: 'J', level: 'killer',
+  q: 'Reference [3] is about Escherichia coli. Why is it in a yeast proposal?',
+  qcn: '文献 [3] 讲的是大肠杆菌。为什么出现在一个酵母方案里？',
+  beats: [
+    '它是 pBpa 这个氨基酸和它的光交联化学的原始出处 —— 这部分和宿主无关',
+    '但它同时也是 MjTyrRS/tRNA 对在 E. coli 里的正交性证明 —— 这部分是宿主特异的',
+    '★ 我把两部分一起搬到酵母，是不严谨的',
+    '化学（benzophenone 三线态夺氢）在哪都一样',
+    '正交对必须换成酵母适用的（E. coli TyrRS/tRNA，Chin 2003）'
+  ],
+  script: 'It is there for two things, and only one of them travels. The chemistry — pBpa itself, and benzophenone photocrosslinking — is host-independent; a triplet diradical abstracts hydrogen the same way in any cell. But the paper is also the demonstration that the M. jannaschii pair is orthogonal, and orthogonality is defined against a specific host\'s translation machinery. I carried both parts across to yeast, and I should only have carried the first. The correct citation for a yeast orthogonal pair is the 2003 Science paper from the same group, using the E. coli TyrRS/tRNA pair. So the reference is right for the amino acid and wrong for the pair.',
+  cn: '★★ 这是 h2 的**文献版本**，考官可能从任一角度切进来。两题的答案要能互相支撑。\n\n这题的漂亮之处在于那个**拆分**：一篇文献支持两个论点，其中一个可以跨宿主迁移（化学），另一个不能（正交性）。你能把它拆开，说明你不是在盲目引用，而是知道每一句引用具体在支持什么。\n\n"the reference is right for the amino acid and wrong for the pair" —— 这个句式干净、诚实、精确。记住它。\n\n**姿态提醒**（和 h2 一样）：承认 → 说明为什么 → 划定边界。不要辩解，也不要过度自责把整段推翻。错的只是正交对的来源生物，pBpa 交联那个设计思路本身完全成立。',
+  followups: [
+    { q: 'Has pBpa actually been incorporated in yeast?', a: '据我所知是的，用 E. coli 来源的正交对做的。但这一点我应该回去核实原始文献再断言——我不想凭印象引一篇我没读过的文章。（这个回答本身就是加分的：承认知识边界比编一个引用好得多。）' }
+  ],
+  trap: '★ 考官只要念一遍文献标题里的 "Escherichia coli"，这个 gap 就在桌面上了。提前准备好，别现场慌。',
+  lab: null
+},
+{
+  id: 'j4', group: 'J', level: 'deep',
+  q: 'It works. You have a resistant linker. What is the next experiment?',
+  qcn: '成功了，你拿到了抗切 linker。下一个实验是什么？',
+  beats: [
+    '① 单克隆完整表征：抗切性 + 抗原可及性，和野生型并排',
+    '② 真实消化模型：冻干制剂过 SGF→SIF，测抗原保留的时间曲线',
+    '③ 换一个抗原验证通用性 —— linker 是不是只对这一个抗原有效？',
+    '④ 然后才是动物：口服免疫小鼠，测粪便 sIgA 和血清 IgG',
+    '关键判据：抗切 linker 组的免疫应答要显著优于野生型 linker 组'
+  ],
+  script: 'In order. First, characterise the clone properly against wild type — protease resistance and antigen accessibility side by side, because those are the two properties that have to hold together. Second, move from purified enzymes to a proper in vitro digestion model: freeze-dry the yeast, put it through simulated gastric then intestinal fluid, and measure surface antigen as a function of time, so I get a half-life rather than a yes-or-no. Third, and this is the one that decides whether the result is general, swap in a different antigen and ask whether the linker still works — if it only works for the antigen it was selected with, I have found a context-specific solution, not a reusable part. Only then animals: oral immunisation in mice, faecal secretory IgA and serum IgG, with the wild-type linker construct as the comparator. The claim that would justify all of this is that the resistant linker gives a measurably better mucosal response, not just better display.',
+  cn: '★ 第 ③ 步（**换一个抗原测通用性**）是这题的高分点，也是最容易被忽略的一步。\n\n为什么重要：你选出来的 linker 是在一个特定抗原的背景下选的。抗原的大小、电荷、以及它对 linker 的空间遮挡，都可能是这条 linker 表现好的原因。如果换个抗原就不行，那你得到的不是一个**可复用的部件（reusable part）**，而是一个特定组合的局部解。\n\n**"reusable part" 这个说法直指合成生物学的核心价值观**——标准化、模块化、可组合。PESB 是 Protein Engineering & Synthetic Biology，用这个框架说话很对路。\n\n最后那句判据也重要：终点不是"展示得更好"，是"免疫应答更好"。展示是手段，免疫是目的。主动区分这两者，呼应了 a5 的 scope 声明。',
+  followups: [
+    { q: 'Why faecal sIgA and not just serum IgG?', a: '因为口服疫苗的目标是黏膜免疫。分泌型 IgA 是肠道黏膜表面的主要抗体，直接在病原体入侵部位起作用。血清 IgG 说明系统性应答起来了，但对黏膜保护的相关性弱一些。两个都测，但 sIgA 是主要终点。' },
+    { q: 'What is the right comparator?', a: '带野生型 (G4S) linker、其余完全相同的酵母。这样唯一的变量就是 linker——和你整个筛选的逻辑一致。不能拿"不展示抗原的空酵母"当对照，那测的是佐剂效应不是抗原效应（不过那个也该有，作为第二个对照臂）。' }
+  ],
+  lab: null
+},
+{
+  id: 'j5', group: 'J', level: 'killer',
+  q: 'Be honest: does a protease-resistant linker actually give a better oral vaccine?',
+  qcn: '说实话：抗蛋白酶的 linker 真的能做出更好的口服疫苗吗？',
+  beats: [
+    '诚实回答：不知道，而且我没声称知道',
+    '它是一个必要条件，不是充分条件',
+    '抗原留在表面是被免疫系统看到的前提',
+    '但还有很多别的环节：颗粒要被 M cell 摄取、要有足够佐剂信号、要克服口服耐受',
+    '任何一个环节断了，linker 再好也没用',
+    '我做的是把一个已知的失效点堵上，不是保证整条链成立'
+  ],
+  script: 'I do not know, and I was careful not to claim it. What I can say is that keeping the antigen attached is necessary — an empty particle cannot immunise. Whether it is sufficient is a different question, and probably not: the particle still has to be taken up by M cells, there has to be enough adjuvant signal to avoid oral tolerance rather than immunity, and the antigen has to be presented in a conformation the immune system recognises. Any of those can fail independently of my linker. What I have done is remove one known failure point from a chain of them. That is worth doing, and it is also the honest limit of the claim.',
+  cn: '★★ 这是最后一记，考的是**科学诚实**。答案必须是"不知道"，然后解释为什么"不知道"是正确答案。\n\n**必要 vs 充分**这个区分是整题的骨架：\n- 抗原留在表面是**必要**的（空颗粒不可能免疫）\n- 但不**充分**（还有摄取、佐剂、口服耐受等一串环节）\n\n**口服耐受 (oral tolerance)** 值得提一句：肠道免疫系统的默认反应是对口服抗原产生耐受而非免疫——这是防止对食物过敏的机制。要打破它需要足够强的危险信号（佐剂）。这是口服疫苗最根本的困难，比蛋白酶降解还难。能提到这一点，说明你知道这个领域真正的瓶颈在哪。\n\n"remove one known failure point from a chain of them" —— 这句话是这整篇作业最诚实、也最有力的自我定位。\n\n这完全符合 CLAUDE.md 第五条：**数据回答不了的问题就说回答不了。不要硬凑一个看起来合理的答案。** 在口试里，这样的回答几乎总是比过度声称得分高。',
+  followups: [
+    { q: 'What is oral tolerance?', a: '肠道免疫系统对口服抗原的默认反应是产生调节性 T 细胞、抑制应答，而不是激活——这是为了不对食物蛋白过敏。口服疫苗必须提供足够的危险信号（佐剂、颗粒性、TLR/Dectin-1 配体）才能把默认反应从耐受翻转成免疫。酵母的 β-glucan 在这里可能有帮助，但这本身就是个开放问题。' },
+    { q: 'So why is your project worth doing?', a: '因为它是链条上一个**可以被单独解决、而且现在没人解决**的环节。免疫学的那些问题需要动物实验和很多年；linker 这个问题是纯蛋白工程的，可以在几个月里用一个明确的读数解决掉。把可解的部分解掉，本身就是有价值的贡献。' }
+  ],
+  trap: '★ 千万别说 "是的，会更好"。考官问 "be honest" 就是在给你一个展示诚实的机会。抓住它。',
+  lab: null
+}
+];
+
+
+/* ══════════ data/lab.js ══════════ */
+/* =========================================================================
+   PESB 口试 · 联动层
+   把作业里"我会怎么做"和 techniques_handbook.md 里"我真的做过"接起来。
+
+   这是你在这场口试里最大的、别人没有的优势：作业里写的每一步，
+   你几乎都在实验台上做过一遍——只是换了个课题。
+   考官问 "how would you..." 的时候，你可以回答 "I have done this."
+
+   还有：开场白、数字速记、死穴清单、术语表。
+   ========================================================================= */
+
+window.ORAL = window.ORAL || {};
+
+/* ─────────────────────── 开场白：把它背下来 ─────────────────────── */
+window.ORAL.opening = {
+  title: '60 秒开场白',
+  note: '考官说 "tell me about your assignment" 的时候，说这一段。练到不用想。前 30 秒决定他对你的印象。',
+  en: [
+    { beat: '问题', text: 'Yeast is a strong chassis for oral antigen delivery — cheap, particulate, freeze-dryable, no cold chain. But the displayed antigen sits on a flexible linker, and flexible peptides are exactly what proteases prefer. Pepsin in the stomach and pancreatic proteases in the gut can cut the antigen off and leave an intact particle carrying nothing.' },
+    { beat: '靶点', text: 'The linker is the right thing to engineer because it is the only part of the construct whose sequence is arbitrary — the antigen carries the epitopes and the anchor holds everything on, but the linker just needs to be there.' },
+    { beat: '为什么进化', text: 'I would not design it rationally. Pepsin, trypsin, chymotrypsin and elastase have different and partly overlapping preferences — between them they cover basic, aromatic and small residues — so there is no safe sequence to design towards.' },
+    { beat: '方案', text: 'So: randomise four to five positions with NNK, build the library by homologous recombination in yeast, pre-sort for double-positive display, run a gastric-then-intestinal protease challenge, and sort on the c-Myc to HA ratio — c-Myc is distal, HA is proximal, so the ratio reports how much of the construct survived, normalised to how much was there.' },
+    { beat: 'scope', text: 'My endpoint is a linker that survives a defined challenge. Whether the particle immunises is a separate project, and I did not claim it.' }
+  ],
+  cn: '五拍：**问题 → 靶点 → 为什么进化 → 方案 → scope**。\n\n最后那一拍最重要——主动收窄 scope，等于提前堵掉"你怎么证明有免疫原性"这一整条追问线。\n\n讲的时候记住：**不要一上来就说 NNK 和 FACS**。考官要先知道你在解决什么问题，技术细节等他问。'
+};
+
+/* ─────────────────── 联动：作业的每一步 ↔ 你真做过的 ─────────────────── */
+window.ORAL.lab = [
+  {
+    step: '建库：同源重组把简并寡核苷酸装进线性化载体',
+    paper: 'Methodology 1 — "assembled by in vivo homologous recombination of a degenerate oligonucleotide into a linearized yeast display vector"',
+    done: '你的 RBD 重组文库：17 个亲本 PCR 片段 + whole-plasmid PCR 线性化的 pJYDC4，一起电转进酵母，靠同源臂在体内组装。文库分 G1–G4 地域组 + 17-all / weak-all / strong-all。',
+    tech: '技术 5A（酵母同源重组）· 技术 5（电转）· 技术 24（同源臂引物）· 技术 4（DpnI 去母本）',
+    say: 'I have built a library this way — a multi-fragment recombination library of chimeric sarbecovirus RBDs, seventeen parental fragments co-electroporated with a linearised vector. Mine is harder than what I propose here, because I am joining three pieces rather than two.',
+    edge: '★ 你做的是**多片段**版本，比作业里的两片段难。这是可以直接说的强项。'
+  },
+  {
+    step: '诱导展示：GAL1、半乳糖、低温 48 h',
+    paper: 'Methodology 2 — "After induction with galactose"',
+    done: '1/9 培养基、20 °C、48 h、deep well 40 µL 接 1 mL。SDCAA（葡萄糖）扩增不展示，切到 1/9 才诱导。',
+    tech: '技术 5B.3（GAL1 调控）· 专题五（培养基）',
+    say: 'I induce at 20 °C for 48 hours in galactose medium, and amplify in glucose where GAL1 is repressed — separating growth from display keeps growth rate out of the selection.',
+    edge: '具体条件（20 °C / 48 h / 1/9）报得出来，就不是纸上谈兵。'
+  },
+  {
+    step: '双色染色 + 展示量归一化',
+    paper: 'Why This Approach — "The c-Myc/HA ratio ... reduces the effect of differences in baseline expression"',
+    done: '你的 binding sort：ACE2D-CF640R 测结合，SpyTag/SpyCatcher-FITC 测展示量，结合信号必须除以展示量。跨激光组合（488 / 640），和作业里 AF488 / AF647 同构。',
+    tech: '技术 5B.4（SpyTag 报告）· 技术 1（CF 染料标记）· 技术 6（FACS）',
+    say: 'This is the same normalisation I use every week — we display RBD variants, stain ACE2 in the far-red channel and a SpyTag display reporter in green, and we always take the ratio, because otherwise you select for expression instead of the property you care about.',
+    edge: '★★ 这是最强的一条联动。c-Myc/HA 和 ACE2/SpyTag 是**同一个骨架**，只是被测的性质不同（保留 vs 结合）。主动说出来。'
+  },
+  {
+    step: 'FACS 梯度分选、设门、富集',
+    paper: 'Methodology 4 — "sorted according to the c-Myc/HA ratio"',
+    done: 'Expression sort 三轮：0.8–1.2% → 33%（约 30 倍富集）。Binding sort：12 个 ACE2D 浓度梯度，每梯度 200,000 细胞、sort 20,000 事件。Immune escape sort：双色竞争。',
+    tech: '技术 6（FACS）· 技术 29（Kd 与梯度分选）',
+    say: 'In my own expression sort we went from about one percent positive to thirty-three percent over three rounds. And our binding sort scans twelve ACE2 concentrations, which is effectively a population-level binding curve — the same idea as titrating protease dose here.',
+    edge: '★ 0.8–1.2% 和 33% 这两个数字直接用来回答 e5（分选条件怎么定）和 f8（富集多少算好）。'
+  },
+  {
+    step: '滴定选择条件（"leave a measurable fraction"）',
+    paper: 'Possible Problems 3 — "test a range of protease concentrations or incubation times"',
+    done: '你的 ACE2D 梯度就是在扫 Kd：12 个浓度，看哪一档还有信号。选择压的强度是**测出来的**，不是拍脑袋定的。',
+    tech: '技术 29.3（梯度 sort 本质是群体级结合曲线）',
+    say: 'Choosing the challenge strength is the same problem as choosing a ligand concentration — you titrate until the population separates, you do not guess. In our binding sort that is a twelve-point dilution series.',
+    edge: '这条把作业里"测一系列浓度"这句含糊的话，兑现成你真做过的具体做法。'
+  },
+  {
+    step: '测序读基因型：文库用 NGS、单克隆用 Sanger',
+    paper: 'Methodology 5 — "analysed by deep sequencing" + "tested individually"',
+    done: 'KYB 系列 NGS 做文库（含 KYB403–407 unsort 对照 = mock 臂的同构物）；LCJ471–497 共 27 个单克隆 Sanger 验证。',
+    tech: '技术 10（Sanger / NGS / SimPlot）· 技术 8（Lyticase 破壁 + miniprep）',
+    say: 'We sequence the pools by NGS with an unsorted control, and confirm individual winners by Sanger — twenty-seven single colonies in the current round. The unsorted arm is what makes "enriched" mean anything.',
+    edge: '★ KYB403–407（unsort）正好回答 g3 那一刀："enriched relative to what"。你已经在做那个对照了。'
+  },
+  {
+    step: '从酵母里把质粒拿回来',
+    paper: '（作业没写，但分选之后必须做）',
+    done: 'Lyticase 破壁 + miniprep，再转进 E. coli Stable 感受态扩增，然后送测。',
+    tech: '技术 8（Lyticase + miniprep）· 技术 9（Stable 感受态转化）',
+    say: 'Recovering plasmid from sorted yeast needs lyticase to digest the wall before a standard miniprep, and then a passage through E. coli to get enough DNA — that step is not in my write-up but it is where the genotype actually comes back.',
+    edge: '作业没写这一步。考官如果问 "how do you get the sequence out"，你能补上完整流程，是加分的。'
+  },
+  {
+    step: '不要被 count 排序骗了',
+    paper: 'Methodology 5 — "identify linker sequences that become enriched"',
+    done: '你的项目里踩过这个坑：按 count 排序的频率表看起来像所有东西都塌缩到两对亲本上，实际上那两对里包含 10 个和 8 个断点不同的独立序列。',
+    tech: 'CLAUDE.md「已经犯过的错」表',
+    say: 'One thing I would be careful about: a frequency table sorted by count can look like collapse when it is not. In my own project a table like that read as though everything had converged on two parental pairs, and in fact those pairs contained ten and eight distinct sequences with different breakpoints — independent events, not one winner.',
+    edge: '★★ 这是 i5（"一条序列主导，你高兴吗"）的完美弹药，而且是你**真的踩过**的坑。真实的错误比正确的原则更有说服力。'
+  }
+];
+
+/* ─────────────────────────── 数字速记 ─────────────────────────── */
+window.ORAL.numbers = [
+  { k: 'NNK 密码子数',        v: '32',                    why: '4 × 4 × 2（K = G/T）' },
+  { k: 'NNK 里的终止子',      v: '1 个（TAG）',            why: 'TAA、TGA 第三位是 A，被 K 排除' },
+  { k: 'NNN 里的终止子',      v: '3 个 / 64 密码子',        why: '所以 NNK 把终止率减半' },
+  { k: '5 位点 · 蛋白多样性', v: '20⁵ = 3.2 × 10⁶',        why: '★ 原文写 "roughly 10⁶"，偏小一档，主动更正' },
+  { k: '5 位点 · DNA 多样性', v: '32⁵ = 3.4 × 10⁷',        why: '转化子要按这个数算，不是按蛋白数' },
+  { k: '5 位点 · 含终止子',   v: '1−(31/32)⁵ ≈ 15%',       why: '所以约 85% 全长；这就是 pre-sort 的理由' },
+  { k: '4 位点 · 蛋白 / DNA', v: '1.6 × 10⁵ / 1.05 × 10⁶',  why: '退路方案：转化轻松覆盖 10 倍以上' },
+  { k: '覆盖率经验规则',      v: '3 × 多样性 → 95%',        why: '泊松：P(漏掉) = e^(−N/D)，λ=3 → 5%' },
+  { k: '需要的转化子',        v: '~10⁸',                   why: '3 × 3.4×10⁷。顶到酵母电转的天花板' },
+  { k: '酵母转化上限',        v: '~10⁷ 常规，~10⁹ 优化',    why: '噬菌体是 10¹⁰–10¹¹，这是酵母展示的主要代价' },
+  { k: '同源臂长度',          v: '~40 bp',                 why: '酵母 HR 高效重组的常用长度' },
+  { k: 'Pepsin 最适 pH',      v: '1.5–2.5',                why: '天冬氨酸蛋白酶，两个 Asp 需要特定质子化状态' },
+  { k: 'Pepsin 失活',         v: 'pH > 7 失活，> 8 不可逆',  why: '★ 这就是你终止胃段的办法' },
+  { k: 'SGF 配方',            v: 'pepsin 3.2 g/L, NaCl 2 g/L, pH 1.2–2.0, 37 °C', why: 'USP 模拟胃液' },
+  { k: 'SIF 配方',            v: 'pancreatin 10 g/L, 磷酸钾, pH 6.8, 37 °C',       why: 'USP 模拟肠液' },
+  { k: '生理转运时间',        v: '胃 0.5–2 h，小肠 2–4 h',   why: '挑战时长的生理上界' },
+  { k: 'AF488 激发/发射',     v: '488 nm → ~519 nm',       why: '绿通道' },
+  { k: 'AF647 激发/发射',     v: '640 nm → ~668 nm',       why: '红通道，跨激光所以串色小' },
+  { k: '第一轮目标阳性率',    v: '0.1–1%',                 why: '你自己 expression sort 第 1–2 轮 0.8–1.2%' },
+  { k: '你的富集实绩',        v: '1% → 33%，约 30×',        why: 'expression sort 三轮' },
+  { k: 'pBpa 激发波长',       v: '~365 nm',                why: '长波，不伤蛋白和细胞' },
+  { k: 'pBpa 作用距离',       v: '~3 Å',                   why: '真正的接触，不是"附近"' },
+  { k: 'HA tag 序列',         v: 'YPYDVPDYA',              why: '来自流感血凝素' },
+  { k: 'c-Myc tag 序列',      v: 'EQKLISEEDL',             why: '经典抗体 9E10' },
+  { k: 'Aga1–Aga2 连接',      v: '两对二硫键',              why: 'Aga1 再靠 GPI 锚共价连到细胞壁葡聚糖' }
+];
+
+/* ─────────────────────────── 死穴清单 ─────────────────────────── */
+window.ORAL.weakspots = [
+  {
+    id: 'w1', severity: 'critical',
+    what: '正交对搞错了宿主',
+    where: 'Methodology · Non-canonical amino acids（原文第 15 段）',
+    detail: 'M. jannaschii TyrRS/tRNA 对是在 **E. coli** 里正交的——这正是你引的 Chin 2002 做的事。在 S. cerevisiae 里，标准的正交对是 **E. coli TyrRS / tRNA^Tyr_CUA**（Chin et al., Science 2003）。正交性是相对宿主定义的，换宿主必须换对。',
+    fix: '承认 → 说出正确的对 → 解释一般规律（细菌宿主用古菌来源，真核宿主用细菌来源）→ 划定边界（只有来源生物错，交联设计没错）。',
+    q: 'h2',
+    note: '我对 Chin 2003 Science 用 E. coli 对做酵母这一点把握较高，但上考场前值得自己核一遍原文——不要引一篇没读过的文章。'
+  },
+  {
+    id: 'w2', severity: 'critical',
+    what: '文库数字算错一档 + 上标丢失',
+    where: 'Methodology 1（原文第 10 段）',
+    detail: '20⁵ = 3.2 × 10⁶，不是 10⁶。而且 docx 导出时上标掉了，纸面上印的是 "106"——考官可能真的以为你写了 106 个序列。',
+    fix: '主动说："that is ten to the sixth — the superscript did not survive the export — and strictly it is 3.2 million, my write-up rounds it down."',
+    q: 'd2',
+    note: null
+  },
+  {
+    id: 'w3', severity: 'critical',
+    what: '染色前没说要灭活蛋白酶',
+    where: 'Methodology 4 — "the cells would be stained again"',
+    detail: '抗体也是蛋白。不灭活就加抗体，抗体会被切碎，两个通道一起掉——你测到的是残留酶活性，不是 linker。原文完全没提这一步。',
+    fix: 'pepsin 升 pH 到 8（不可逆失活）；胰酶加 AEBSF 或大豆胰蛋白酶抑制剂；冰冷 PBSF 多次洗。并给出验证实验：把已灭活的酶加到未处理样品里再染，看强度变不变。',
+    q: 'f4',
+    note: '这是最容易显示"只在纸上想过"的一刀。'
+  },
+  {
+    id: 'w4', severity: 'high',
+    what: '"enriched" 没有基线',
+    where: 'Methodology 5 — "sequences that become enriched"',
+    detail: '相对于什么富集？原文没写。而且不能拿理论期望频率当基线——建库本身就不均匀。',
+    fix: '两个基线：round 0（诱导后、pre-sort 后、未挑战的文库）扣建库偏倚；mock-treated 平行臂扣生长和操作偏倚。真抗性 = 处理组富集 AND mock 组不富集。',
+    q: 'g3',
+    note: '你自己的 KYB403–407 unsort 对照就是这个角色，可以直接引用。'
+  },
+  {
+    id: 'w5', severity: 'high',
+    what: '"the linker" 到底是哪一段没说清',
+    where: 'Problem（原文第 2 段）',
+    detail: 'pCTCON2 里 Aga2 和插入片段之间不止一段序列，HA tag 本身就在中间。如果你随机化的是 Aga2–HA 之间那段，切断后 HA 和 c-Myc 一起掉 → 双阴性 → 掉出 gate，你的 ratio 读数根本不成立。',
+    fix: '明确说：随机化的是 **HA 和抗原之间**那一段。并且主动指出 ratio 只报告 HA 与 c-Myc 之间的切割——近端切割表现为双阴性，会从 gate 里消失而不是得高分。',
+    q: 'b1',
+    note: '主动讲出这个限制是加分的，等考官挖出来是扣分的。'
+  },
+  {
+    id: 'w6', severity: 'high',
+    what: '没验证酵母能不能扛住 pH 2',
+    where: 'Methodology 3（原文第 12 段）',
+    detail: '整个方案建立在"细胞过得了胃段"这个未验证的前提上。',
+    fix: '诚实说这是第一个要做的对照。然后给出关键区分：**分选不需要细胞活，只需要完整可染**；活性只在扩增那一步才需要。所以真正的问题是回收率，可以靠多分选细胞补偿。',
+    q: 'e4',
+    note: '别说"酵母很结实应该没问题"。承认未验证反而得分。'
+  },
+  {
+    id: 'w7', severity: 'medium',
+    what: '读数分不出切在 linker 还是切在抗原',
+    where: 'Why This Approach（原文第 8 段已部分承认）',
+    detail: '抗原比 linker 大得多，是大得多的蛋白酶靶点。切在两者任一处都是 HA 保留、c-Myc 丢失。',
+    fix: '论证很干净：**变异只在 linker 上**，抗原对所有变体相同，所以它是均匀背景不是混淆因素——变体间的差异只可能来自 linker。但要承认代价：动态范围被压缩。',
+    q: 'i6',
+    note: '"混淆因素 vs 均匀背景" 这个区分本身就是很强的统计思维。'
+  },
+  {
+    id: 'w8', severity: 'medium',
+    what: 'reference strain 的设计太笼统',
+    where: 'Possible Problems 2 — "a different fluorescent marker"',
+    detail: '"不同的荧光标记"不是一个设计，是一个想法。',
+    fix: '具体到：固定野生型 linker + 组成型 mCherry（561 nm，不占用 488/640 两个 tag 通道），按 1% 掺入，全程跟随。它同时给两个读数——比例变化报告整体存活，自己的 ratio 报告染色/仪器漂移。',
+    q: 'i2',
+    note: null
+  },
+  {
+    id: 'w9', severity: 'medium',
+    what: '没说 assay 开发要先于建库',
+    where: '（全篇都没有）',
+    detail: '整个方案假设 c-Myc/HA 读数能分辨抗切和不抗切的 linker。这个假设没被验证过。',
+    fix: '主动提出：第一个实验是拿野生型 (G4S) 和一条富 Pro 的对照克隆走完整套流程，看两者的 ratio 分布分不分得开。分不开的话，建库是白花钱。',
+    q: 'i4',
+    note: '★ 主动提出一个原文没有的、且明显正确的实验，是全场最能加分的动作之一。'
+  },
+  {
+    id: 'w10', severity: 'low',
+    what: '真正的终止密码子如果是 TAG 会被读通',
+    where: 'Methodology · ncAA',
+    detail: '你的构建体 C 端是 Myc 后接终止子。如果同时存在 amber 抑制系统，TAG 终止子也会被读通。',
+    fix: '把终止子换成 TAA，而且串两个（TAA TAA）降低通读。',
+    q: 'h1',
+    note: '小细节，但说出来显示你把系统当整体在想。'
+  }
+];
+
+/* ─────────────────────────── 术语速查 ─────────────────────────── */
+window.ORAL.terms = [
+  { en: 'NNK codon',              cn: 'NNK 简并密码子',   def: 'N = A/T/G/C，K = G/T。32 个密码子编码全部 20 种氨基酸，只剩 TAG 一个终止子。相比 NNN（64 密码子、3 终止子）终止率减半、密码子偏倚从 6 倍降到 3 倍。' },
+  { en: 'Amber codon',            cn: '琥珀密码子',       def: 'UAG。三个终止密码子中被拿来重编码为 ncAA 的那一个。竞争对手在细菌是 RF1、在真核是 eRF1。' },
+  { en: 'Orthogonal pair',        cn: '正交对',           def: 'aaRS + tRNA，双向不与宿主翻译机器交叉：宿主 aaRS 不载这个 tRNA，这个 aaRS 不载宿主 tRNA。★ 正交性相对宿主定义，换宿主要换对。' },
+  { en: 'pBpa',                   cn: '对苯甲酰基苯丙氨酸', def: '侧链是二苯甲酮。365 nm 激发 → 三线态双自由基 → 夺取邻近 C–H → 共价 C–C 键。作用距离 ~3 Å。优势：无 C–H 可夺时回到基态，可反复激发。' },
+  { en: 'Aga1p / Aga2p',          cn: 'a-凝集素锚定系统', def: 'Aga1p 经 GPI 锚共价连在细胞壁葡聚糖上；Aga2p 经两对二硫键连在 Aga1p 上，C 端融合展示蛋白。' },
+  { en: 'GPI anchor',             cn: '糖基磷脂酰肌醇锚', def: '翻译后加在蛋白 C 端的糖脂锚。在酵母里最终被转移到细胞壁的 β-1,6-葡聚糖上——所以是壁蛋白，不是膜蛋白。' },
+  { en: 'Genotype–phenotype linkage', cn: '基因型-表型偶联', def: '表型在细胞表面、编码它的质粒在同一细胞内。细胞是把两者绑在一起的物理容器，所以按表型分选 = 同时富集基因型。展示技术的全部意义。' },
+  { en: 'Catabolite repression',  cn: '分解代谢物阻遏',   def: '有首选碳源（葡萄糖）时关闭次选碳源的利用基因。GAL1 和 lac 操纵子逻辑镜像。' },
+  { en: 'Aspartic protease',      cn: '天冬氨酸蛋白酶',   def: '活性位点两个 Asp，一个质子化一个去质子化，协同活化水分子。需要酸性 pH。代表：pepsin、HIV protease、renin、cathepsin D。' },
+  { en: 'Catalytic triad',        cn: '催化三联体',       def: 'Ser-His-Asp。His 夺 Ser 质子，Ser 亲核进攻羰基碳形成酰基-酶中间体，Asp 稳定质子化的 His。丝氨酸蛋白酶（trypsin/chymotrypsin/elastase）的共同机制。' },
+  { en: 'P1 / P1′',               cn: '底物位点命名',     def: 'Schechter-Berger 命名法。切割位点 N 端侧是 P1、P2…，C 端侧是 P1′、P2′…。酶上对应的口袋是 S1、S1′。"trypsin 切 Lys/Arg 之后" 就是 "P1 是 Lys/Arg"。' },
+  { en: 'AEBSF',                  cn: '丝氨酸蛋白酶抑制剂', def: '4-(2-氨基乙基)苯磺酰氟。共价不可逆修饰活性位点 Ser。比 PMSF 水溶性好、更稳定、毒性低。' },
+  { en: 'SGF / SIF',              cn: '模拟胃液 / 肠液',   def: 'USP 标准。SGF：pepsin 3.2 g/L、NaCl 2 g/L、pH 1.2–2.0。SIF：pancreatin 10 g/L、磷酸钾缓冲、pH 6.8。都在 37 °C。' },
+  { en: 'Hydrodynamic focusing',  cn: '流体动力学聚焦',   def: '样品流被更快的鞘液包裹挤压，细胞被排成单列逐个通过激光焦点。流式的物理前提。' },
+  { en: 'Drop delay',             cn: '液滴延迟',         def: '从激光询问点到液流断成液滴之间的固定时间差。仪器必须知道它才能在正确时刻充电。校准偏一个液滴，分选纯度直接崩。' },
+  { en: 'Compensation',           cn: '荧光补偿',         def: '荧光发射谱有长尾，会漏进相邻通道。用单染对照测出漏出比例并扣除。★ 在比值读数里尤其关键——串色会系统性虚高高表达细胞的比值。' },
+  { en: 'Doublet exclusion',      cn: '去黏连',           def: 'FSC-A vs FSC-H。单细胞在对角线上，两个粘连的细胞面积相对高度偏大，落在对角线上方。不排除会污染收集管。' },
+  { en: 'MRX complex',            cn: 'MRX 复合物',       def: 'Mre11-Rad50-Xrs2。和 Exo1 一起做末端切除，把线性 DNA 的 5\' 端切掉露出 3\' 单链尾。酵母同源重组第一步。' },
+  { en: 'Rad51',                  cn: 'Rad51',            def: '真核的 RecA 同源物。在 Rad52 协助下装载到 3\' ssDNA 形成核蛋白丝，搜索并侵入同源双链形成 D-loop。' },
+  { en: 'D-loop',                 cn: '置换环',           def: 'Rad51 丝侵入同源双链后，把其中一条链挤出去形成的结构。链入侵的产物，也是延伸的起点。' },
+  { en: 'DpnI',                   cn: 'DpnI',             def: 'Type IV 限制酶，只切**双链都甲基化**的 GATC。E. coli 提的模板质粒有 Dam 甲基化，PCR 产物没有——所以专门消化模板、不动产物。' },
+  { en: 'Oral tolerance',         cn: '口服耐受',         def: '肠道免疫系统对口服抗原的默认反应是产生调节性 T 细胞、抑制应答（防止对食物过敏）。口服疫苗必须提供足够危险信号才能翻转成免疫。这是口服疫苗最根本的困难。' },
+  { en: 'M cell',                 cn: 'M 细胞',           def: 'Peyer\'s patch 表面的特化上皮细胞，专门做 transcytosis 把肠腔颗粒送给下面的免疫细胞。口服颗粒疫苗进入免疫系统的门。' },
+  { en: 'Dectin-1',               cn: 'Dectin-1',         def: 'C 型凝集素受体，识别 β-1,3-葡聚糖。酵母细胞壁富含 β-glucan，所以酵母颗粒本身就带佐剂信号——"naturally particulate" 背后的分子基础。' },
+  { en: 'Enteric coating',        cn: '肠溶包衣',         def: 'pH 响应聚合物（如 Eudragit 甲基丙烯酸共聚物）。酸性下羧基质子化不溶，pH > 5.5 去质子化溶解。挡得住胃，挡不住小肠。' }
+];
+
+
+/* ══════════ app.js ══════════ */
+/* =========================================================================
+   PESB 口试 — app.js
+   五个模式：演练 / 题库 / 原文 / 联动 / 速记
+   状态（自评）存在 localStorage，key 前缀 pesboral。
+   ========================================================================= */
+(function () {
+'use strict';
+
+const D = window.ORAL;
+const QS = D.questions;
+const BY_ID = Object.fromEntries(QS.map(q => [q.id, q]));
+const GROUP = Object.fromEntries(D.groups.map(g => [g.id, g]));
+
+const LEVELS = [
+  { id: 'core',   label: 'core',   cn: '必被问' },
+  { id: 'deep',   label: 'deep',   cn: '深追问' },
+  { id: 'killer', label: 'killer', cn: '阴招 / 硬伤' }
+];
+
+/* ─────────────────────────── 状态 ─────────────────────────── */
+const KEY = 'pesboral.v1';
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return Object.assign(defaults(), JSON.parse(raw));
+  } catch (e) { /* localStorage 不可用时静默退回默认值，不影响使用 */ }
+  return defaults();
+}
+function defaults() {
+  return {
+    grades: {},                                   // id -> 'good' | 'half' | 'bad'
+    seen: {},                                     // id -> 次数
+    groups: D.groups.map(g => g.id),
+    levels: LEVELS.map(l => l.id),
+    weighted: true,
+    theme: null,
+    voice: {}                                     // 'en'|'zh' -> {uri, rate, pitch}
+  };
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* 无痕模式等 */ }
+}
+
+/* ─────────────────────────── 工具 ─────────────────────────── */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* 把 cn 字段里的轻量标记渲染成 HTML：**粗体**、| 表格 |、段落。 */
+function richCN(text) {
+  if (!text) return '';
+  const blocks = String(text).split('\n\n');
+  return blocks.map(block => {
+    const lines = block.split('\n');
+    // 连续的以 | 开头的行 → 表格
+    if (lines.length >= 2 && lines.every(l => l.trim().startsWith('|'))) {
+      const rows = lines.map(l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim()));
+      const isSep = r => r.every(c => /^-+$/.test(c.replace(/:/g, '')));
+      const head = rows[0];
+      const body = rows.slice(1).filter(r => !isSep(r));
+      return '<table><thead><tr>' + head.map(c => `<th>${inline(c)}</th>`).join('') +
+             '</tr></thead><tbody>' +
+             body.map(r => '<tr>' + r.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') +
+             '</tbody></table>';
+    }
+    return '<p>' + lines.map(inline).join('<br>') + '</p>';
+  }).join('');
+}
+function inline(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+/* 送进语音合成前先脱掉标记：** 会被念成 "star star"，★ 和 → 各家读法不一。 */
+function plain(s) {
+  return String(s || '')
+    .replace(/\*\*/g, '')
+    .replace(/[★☆]/g, '')
+    .replace(/[→←↳]/g, '，')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function highlight(html, term) {
+  if (!term) return html;
+  const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return html.replace(/>([^<]+)</g, (m, txt) => '>' + txt.replace(re, '<mark>$1</mark>') + '<');
+}
+
+const MARK = { good: '✓', half: '~', bad: '✕' };
+
+/* ═══════════════════════════ 朗读 ═══════════════════════════
+   Web Speech API 的合成音，不是真人录音。这个 app 里最值得听的是
+   script——考官面前你要说出口的那一段。听它以正常语速念一遍，你才
+   知道它有多长、断在哪里；默读永远算不出这个。 */
+const speechOK = typeof window !== 'undefined' && 'speechSynthesis' in window;
+let activeSay = null;
+
+// 语速按语言分开存：同一个数字在中英文里读起来快慢不一样。
+const VOICE_DEFAULTS = {
+  en: { uri: '', rate: 0.94, pitch: 1 },
+  zh: { uri: '', rate: 1.0,  pitch: 1 }
+};
+// 判断神经网络语音的厂商关键词。Web Speech API 没有 "是否神经网络" 这个
+// 字段，名字是唯一的信号，所以这是启发式，面板里也照实说成提示。
+const NATURAL_RE = /natural|neural|online|premium|enhanced|siri/i;
+const VOICE_SAMPLE = {
+  en: 'I would randomise four to five positions with NNK, and sort on the c-Myc to HA ratio.',
+  zh: '正交性是相对宿主定义的，换宿主就要换对。这是全篇最可能被抓住的一处。'
+};
+
+const langTag = s => String(s || '').replace(/_/g, '-').toLowerCase();
+const voiceKey = lang => (langTag(lang).indexOf('zh') === 0 ? 'zh' : 'en');
+
+function voiceCfg(key) { return Object.assign({}, VOICE_DEFAULTS[key], state.voice[key] || {}); }
+function setVoiceCfg(key, patch) { state.voice[key] = Object.assign(voiceCfg(key), patch); save(); }
+
+function allVoices() {
+  if (!speechOK) return [];
+  try { return window.speechSynthesis.getVoices() || []; } catch (e) { return []; }
+}
+function voicesFor(key) { return allVoices().filter(v => langTag(v.lang).indexOf(key) === 0); }
+
+function pickVoice(lang) {
+  const voices = allVoices();
+  if (!voices.length) return null;
+  const key = voiceKey(lang), cfg = voiceCfg(key);
+  if (cfg.uri) {
+    const chosen = voices.find(v => v.voiceURI === cfg.uri);
+    if (chosen) return chosen;
+    // 存的语音没了（换了机器、换了浏览器、系统语音被卸载）。退回自动挑选，
+    // 而不是用英文嗓子念中文。
+  }
+  const want = langTag(lang);
+  return voices.find(v => langTag(v.lang) === want) ||
+         voices.find(v => langTag(v.lang).indexOf(key) === 0) || null;
+}
+
+/* Chrome 会把过长的单条 utterance 念到一半就掐掉，但排队的短句能念完，
+   所以长文本一律先按句子切开再排队。 */
+function speak(text, lang, btn) {
+  if (!speechOK || !text) return;
+  // 再点一次正在朗读的按钮 = 停止。cancel() 在有些浏览器不会可靠触发
+  // onend，所以视觉状态在这里显式清掉，不指望那个事件。
+  if (btn && btn === activeSay) { stopSpeech(); return; }
+  stopSpeech();
+
+  const chunks = (String(text).match(/[^.!?。！？；;]+[.!?。！？；;]*/g) || [String(text)])
+    .map(c => c.trim()).filter(Boolean);
+  if (!chunks.length) return;
+
+  const clear = () => {
+    if (btn) btn.classList.remove('speaking');
+    if (activeSay === btn) activeSay = null;
+  };
+  const cfg = voiceCfg(voiceKey(lang));
+  chunks.forEach((chunk, i) => {
+    const u = new SpeechSynthesisUtterance(chunk);
+    const v = pickVoice(lang);
+    // 相邻变体的语音（用 zh-TW 的嗓子念 zh-CN）只有跟着自己的 tag 才正常，
+    // 所以 utterance 跟随语音，而不是跟随请求。
+    u.lang = v && v.lang ? v.lang : lang;
+    u.rate = cfg.rate; u.pitch = cfg.pitch;
+    if (v) u.voice = v;
+    if (i === 0) u.onstart = () => { if (btn) { btn.classList.add('speaking'); activeSay = btn; } };
+    if (i === chunks.length - 1) { u.onend = clear; u.onerror = clear; }
+    window.speechSynthesis.speak(u);
+  });
+}
+
+function stopSpeech() {
+  if (!speechOK) return;
+  window.speechSynthesis.cancel();
+  if (activeSay) { activeSay.classList.remove('speaking'); activeSay = null; }
+}
+
+/* 小圆 🔊。lang 传 'en-US' 或 'zh-CN'。 */
+function say(text, lang, title) {
+  if (!speechOK || !text) return '';
+  return `<button type="button" class="say-btn" data-say="${esc(text)}" data-lang="${lang || 'en-US'}"
+            aria-label="朗读" title="${esc(title || '朗读（系统合成音，不是真人录音）')}">🔊</button>`;
+}
+/* 带文字的成组朗读按钮：整段开场白、整串 beats。 */
+function sayRun(text, lang, label) {
+  if (!speechOK || !text) return '';
+  return `<button type="button" class="say-run" data-say="${esc(text)}" data-lang="${lang || 'en-US'}"
+            title="连着念完（系统合成音）">🔊 ${esc(label)}</button>`;
+}
+
+/* 事件用 capture 阶段委托到 document：面板会整块重渲染，逐次绑定容易漏。
+   preventDefault 同时挡掉 <summary> 的默认展开——题库里的 🔊 就在 summary
+   里面，不挡的话点朗读会顺手把卡片折叠掉。 */
+function wireSay() {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.say-btn, .say-run');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    speak(btn.dataset.say, btn.dataset.lang, btn);
+  }, true);
+}
+
+/* ─────────────────────── 朗读设置面板 ─────────────────────── */
+let padKey = 'en';
+const padIsOpen = () => { const p = $('#voice-pad'); return p && !p.hidden; };
+
+function renderPad() {
+  const pad = $('#voice-pad');
+  if (!pad) return;
+  if (!speechOK) {
+    pad.innerHTML = '<p class="vp-note">这个浏览器不支持语音合成。用 Chrome、Edge 或 Safari 打开本页。</p>';
+    return;
+  }
+  const key = padKey, cfg = voiceCfg(key);
+  const list = voicesFor(key);
+  const natural = list.filter(v => NATURAL_RE.test(v.name));
+
+  const opts = ['<option value=""' + (cfg.uri ? '' : ' selected') + '>自动选择 · Automatic</option>']
+    .concat(list.map(v =>
+      '<option value="' + esc(v.voiceURI) + '"' + (v.voiceURI === cfg.uri ? ' selected' : '') + '>'
+      + esc(v.name) + ' · ' + esc(v.lang) + (NATURAL_RE.test(v.name) ? ' ✦自然' : '') + '</option>'
+    )).join('');
+
+  // 说清楚缺的是什么，比给一个空下拉框有用：干净的 Windows 上根本没有中文
+  // 语音，页面上不写的话，你只会听到一片安静而不知道为什么。
+  let hint = '';
+  if (!list.length) {
+    hint = '<p class="vp-warn">这台电脑没有装' + (key === 'zh' ? '中文' : '英文') + '语音。'
+         + 'Windows：设置 → 时间和语言 → 语音 → 添加语音；或者直接用 Microsoft Edge 打开本页。</p>';
+  } else if (!natural.length) {
+    hint = '<p class="vp-note">只找到合成感较强的系统语音。用 Microsoft Edge 打开本页能拿到 '
+         + '“Online (Natural)” 神经网络语音，最接近真人——练口试时这个差别很大。</p>';
+  }
+
+  pad.innerHTML =
+    '<div class="vp-head"><strong>朗读 · Read aloud</strong>'
+    + '<button type="button" class="icon-btn vp-x" id="vp-close" aria-label="关闭">✕</button></div>'
+    + '<div class="vp-tabs">'
+    + '<button type="button" data-vp="en" class="' + (key === 'en' ? 'active' : '') + '">EN · script</button>'
+    + '<button type="button" data-vp="zh" class="' + (key === 'zh' ? 'active' : '') + '">中文 · 要点</button>'
+    + '</div>'
+    + '<label class="vp-row"><span>声音</span><select id="vp-voice">' + opts + '</select></label>'
+    + hint
+    + '<label class="vp-row"><span>语速</span>'
+    + '<input type="range" id="vp-rate" min="0.5" max="1.6" step="0.02" value="' + cfg.rate + '">'
+    + '<output id="vp-rate-val">' + cfg.rate.toFixed(2) + '×</output></label>'
+    + '<label class="vp-row"><span>音调</span>'
+    + '<input type="range" id="vp-pitch" min="0.6" max="1.4" step="0.05" value="' + cfg.pitch + '">'
+    + '<output id="vp-pitch-val">' + cfg.pitch.toFixed(2) + '</output></label>'
+    + '<div class="vp-actions">'
+    + '<button type="button" class="btn-ghost vp-btn" id="vp-test">▶ 试听</button>'
+    + '<button type="button" class="btn-ghost vp-btn" id="vp-stop">■ 停止</button>'
+    + '<button type="button" class="btn-ghost vp-btn" id="vp-reset">复位</button>'
+    + '</div>'
+    + '<p class="vp-note">系统合成音，不是真人录音。标 ✦自然 的是神经网络语音；'
+    + '判断依据只是语音名称，仅作提示。设置对全站每一个 🔊 生效。</p>';
+}
+
+function padSetOpen(open) {
+  const pad = $('#voice-pad');
+  if (!pad) return;
+  if (open) renderPad();
+  pad.hidden = !open;
+  const btn = $('#voice-toggle');
+  if (btn) { btn.classList.toggle('active', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+}
+
+function wirePad() {
+  const pad = $('#voice-pad'), toggle = $('#voice-toggle');
+  if (!pad || !toggle) return;
+
+  toggle.addEventListener('click', e => { e.stopPropagation(); padSetOpen(pad.hidden); });
+
+  // 拖滑块时不能整块重渲染——那会把滑块从指针底下抽走。每个控件只更新自己
+  // 的读数和存的值。
+  pad.addEventListener('input', e => {
+    const t = e.target;
+    if (t.id === 'vp-voice') { setVoiceCfg(padKey, { uri: t.value }); return; }
+    if (t.id === 'vp-rate') {
+      const r = Number(t.value); setVoiceCfg(padKey, { rate: r });
+      $('#vp-rate-val').textContent = r.toFixed(2) + '×'; return;
+    }
+    if (t.id === 'vp-pitch') {
+      const p = Number(t.value); setVoiceCfg(padKey, { pitch: p });
+      $('#vp-pitch-val').textContent = p.toFixed(2);
+    }
+  });
+
+  pad.addEventListener('click', e => {
+    e.stopPropagation();
+    const tab = e.target.closest('[data-vp]');
+    if (tab) { padKey = tab.dataset.vp; renderPad(); return; }
+    if (e.target.closest('#vp-close')) { padSetOpen(false); return; }
+    if (e.target.closest('#vp-reset')) { delete state.voice[padKey]; save(); renderPad(); return; }
+    if (e.target.closest('#vp-stop')) { stopSpeech(); return; }
+    const test = e.target.closest('#vp-test');
+    if (test) speak(VOICE_SAMPLE[padKey], padKey === 'zh' ? 'zh-CN' : 'en-US', test);
+  });
+
+  document.addEventListener('click', () => { if (padIsOpen()) padSetOpen(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && padIsOpen()) padSetOpen(false);
+  });
+  // 有些浏览器要等 voiceschanged 才拿得到语音列表，那时面板可能已经开着了。
+  if (speechOK && typeof window.speechSynthesis.addEventListener === 'function') {
+    window.speechSynthesis.addEventListener('voiceschanged', () => { if (padIsOpen()) renderPad(); });
+  }
+}
+
+/* ─────────────────────── 题目卡片渲染 ─────────────────────── */
+/* full=true 显示答案区；用于演练翻面后和题库展开。 */
+function renderAnswer(q) {
+  let h = '';
+
+  h += `<div class="ans-block"><div class="ans-label">说话顺序 · beats
+          ${sayRun(plain(q.beats.join('。')), 'zh-CN', '念要点')}</div>
+        <ol class="beats">${q.beats.map(b => `<li>${inline(b)}</li>`).join('')}</ol></div>`;
+
+  // script 是这个 app 里最值得听的东西——考官面前你要说出口的那一段。
+  h += `<div class="ans-block"><div class="ans-label">可以直接说出口的 · script
+          ${sayRun(q.script, 'en-US', '念一遍')}</div>
+        <div class="script">${esc(q.script)}</div></div>`;
+
+  h += `<div class="ans-block"><div class="ans-label">为什么是这个答案</div>
+        <div class="cn-explain">${richCN(q.cn)}</div></div>`;
+
+  if (q.followups && q.followups.length) {
+    h += `<div class="ans-block"><div class="ans-label">考官会接着挖 · follow-ups</div>` +
+         q.followups.map(f =>
+           `<div class="fu">
+              <p class="fu-q">${esc(f.q)}${say(f.q, 'en-US', '念这个追问')}</p>
+              <p class="fu-a">${inline(f.a)}${say(plain(f.a), 'zh-CN', '念答案')}</p>
+            </div>`
+         ).join('') + `</div>`;
+  }
+
+  if (q.trap) {
+    h += `<div class="callout callout-trap"><span class="callout-label">踩雷点</span>${inline(q.trap)}</div>`;
+  }
+  if (q.lab) {
+    h += `<div class="callout callout-lab"><span class="callout-label">联动你做过的实验</span>${inline(q.lab)}</div>`;
+  }
+  return h;
+}
+
+function qTags(q) {
+  const g = GROUP[q.group];
+  return `<div class="qcard-tags">
+    <span class="tag tag-${q.level}">${q.level}</span>
+    <span class="tag tag-group">${g.icon} ${g.cn}</span>
+    <span class="tag tag-id">${q.id}</span>
+  </div>`;
+}
+
+/* ═══════════════════════════ 模式：演练 ═══════════════════════════ */
+let drill = { queue: [], i: 0, revealed: false };
+
+function buildChips() {
+  $('#drill-groups').innerHTML = D.groups.map(g => {
+    const n = QS.filter(q => q.group === g.id).length;
+    const on = state.groups.includes(g.id) ? ' active' : '';
+    return `<button class="chip${on}" data-g="${g.id}">${g.icon} ${g.cn}<span class="chip-n">${n}</span></button>`;
+  }).join('');
+
+  $('#drill-levels').innerHTML = LEVELS.map(l => {
+    const n = QS.filter(q => q.level === l.id).length;
+    const on = state.levels.includes(l.id) ? ' active' : '';
+    return `<button class="chip${on}" data-l="${l.id}">${l.label} <span class="chip-note">${l.cn}</span><span class="chip-n">${n}</span></button>`;
+  }).join('');
+
+  $('#drill-weighted').classList.toggle('active', state.weighted);
+  updateDrillCount();
+}
+
+function pool() {
+  return QS.filter(q => state.groups.includes(q.group) && state.levels.includes(q.level));
+}
+
+function updateDrillCount() {
+  const p = pool();
+  const un = p.filter(q => !state.grades[q.id]).length;
+  $('#drill-count').textContent = `范围内 ${p.length} 题，其中 ${un} 题还没练过。`;
+  $('#drill-start').disabled = p.length === 0;
+}
+
+/* 加权抽题：不会的权重最高，没练过次之，答得出的最低。 */
+function shuffleWeighted(items) {
+  const w = q => {
+    if (!state.weighted) return 1;
+    const g = state.grades[q.id];
+    if (g === 'bad')  return 8;
+    if (g === 'half') return 4;
+    if (g === 'good') return 1;
+    return 6;                       // 没练过
+  };
+  // 加权洗牌：每项取 random^(1/w)，降序。权重大的更可能排前面。
+  return items
+    .map(q => ({ q, k: Math.pow(Math.random(), 1 / w(q)) }))
+    .sort((a, b) => b.k - a.k)
+    .map(x => x.q);
+}
+
+function startDrill() {
+  const p = pool();
+  if (!p.length) return;
+  drill.queue = shuffleWeighted(p);
+  drill.i = 0;
+  $('#drill-setup').hidden = true;
+  $('#drill-stage').hidden = false;
+  showDrill();
+}
+
+function showDrill() {
+  stopSpeech();                 // 上一题的 script 不能压着下一题念
+  if (drill.i >= drill.queue.length) {
+    $('#drill-card').innerHTML =
+      `<div class="qcard"><div class="qcard-body"><p class="empty">
+        这一轮 ${drill.queue.length} 题都过完了。回设置换个范围，或者再抽一轮。
+      </p></div></div>`;
+    $('#drill-pos').textContent = `${drill.queue.length} / ${drill.queue.length}`;
+    return;
+  }
+  drill.revealed = false;
+  const q = drill.queue[drill.i];
+  $('#drill-pos').textContent = `${drill.i + 1} / ${drill.queue.length}`;
+
+  $('#drill-card').innerHTML = `
+    <div class="qcard">
+      <div class="qcard-head">
+        ${qTags(q)}
+        <p class="qcard-q">${esc(q.q)}${say(q.q, 'en-US', '让考官念给你听')}</p>
+        <p class="qcard-qcn">${esc(q.qcn)}${say(q.qcn, 'zh-CN', '念中文')}</p>
+      </div>
+      <div class="qcard-prompt">
+        <span>先自己开口说完整段，再翻。</span>
+        <button class="btn-primary" id="reveal">翻答案</button>
+      </div>
+      <div class="qcard-body" id="drill-answer" hidden></div>
+    </div>`;
+
+  $('#reveal').addEventListener('click', reveal);
+}
+
+function reveal() {
+  if (drill.revealed) return;
+  drill.revealed = true;
+  const q = drill.queue[drill.i];
+  state.seen[q.id] = (state.seen[q.id] || 0) + 1;
+  save();
+
+  const body = $('#drill-answer');
+  body.hidden = false;
+  body.innerHTML = renderAnswer(q) + `
+    <div class="grade-row">
+      <button class="grade-btn grade-good" data-grade="good">✓ 答得出<small>说得完整</small></button>
+      <button class="grade-btn grade-half" data-grade="half">~ 半会<small>方向对，漏了要点</small></button>
+      <button class="grade-btn grade-bad"  data-grade="bad">✕ 不会<small>说不出来</small></button>
+    </div>`;
+
+  $('.qcard-prompt').innerHTML = '<span>自评之后自动下一题。</span>';
+
+  body.querySelectorAll('[data-grade]').forEach(b => {
+    b.addEventListener('click', () => {
+      state.grades[q.id] = b.dataset.grade;
+      save();
+      updateStat();
+      drill.i++;
+      showDrill();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+
+/* ═══════════════════════════ 模式：题库 ═══════════════════════════ */
+let bankExpanded = false;
+
+function initBank() {
+  $('#bank-total').textContent = QS.length + ' 题';
+  $('#bank-group').innerHTML = '<option value="">全部板块</option>' +
+    D.groups.map(g => `<option value="${g.id}">${g.icon} ${g.cn}</option>`).join('');
+  ['#bank-search', '#bank-group', '#bank-level', '#bank-status'].forEach(s =>
+    $(s).addEventListener('input', renderBank));
+  $('#bank-expand').addEventListener('click', () => {
+    bankExpanded = !bankExpanded;
+    $('#bank-expand').textContent = bankExpanded ? '全部折叠' : '全部展开';
+    renderBank();
+  });
+  renderBank();
+}
+
+function renderBank() {
+  const term = $('#bank-search').value.trim().toLowerCase();
+  const g = $('#bank-group').value;
+  const lv = $('#bank-level').value;
+  const st = $('#bank-status').value;
+
+  let list = QS.filter(q => {
+    if (g && q.group !== g) return false;
+    if (lv && q.level !== lv) return false;
+    if (st) {
+      const cur = state.grades[q.id] || 'none';
+      if (cur !== st) return false;
+    }
+    if (term) {
+      const hay = [q.q, q.qcn, q.beats.join(' '), q.script, q.cn, q.trap || '', q.lab || '',
+                   (q.followups || []).map(f => f.q + f.a).join(' ')].join(' ').toLowerCase();
+      if (!hay.includes(term)) return false;
+    }
+    return true;
+  });
+
+  $('#bank-count').textContent = `${list.length} 题` + (term ? `，匹配 "${term}"` : '');
+
+  if (!list.length) { $('#bank-body').innerHTML = '<p class="empty">没有匹配的题。</p>'; return; }
+
+  let html = '';
+  D.groups.forEach(grp => {
+    const sub = list.filter(q => q.group === grp.id);
+    if (!sub.length) return;
+    html += `<div class="bank-group-head">${grp.icon} ${grp.cn} · ${grp.name} <span style="opacity:.6">(${sub.length})</span></div>`;
+    html += sub.map(q => {
+      const mk = state.grades[q.id];
+      const cls = mk ? 'mark-' + mk : 'mark-none';
+      const sym = mk ? MARK[mk] : '·';
+      return `<details class="bank-item"${bankExpanded ? ' open' : ''} id="bank-${q.id}">
+        <summary>
+          <span class="bank-mark ${cls}">${sym}</span>
+          <span class="bank-q">${esc(q.q)}${say(q.q, 'en-US', '念这道题')}<span class="bank-qcn">${esc(q.qcn)}</span></span>
+          <span class="tag tag-${q.level}">${q.level}</span>
+        </summary>
+        <div class="bank-body">${renderAnswer(q)}</div>
+      </details>`;
+    }).join('');
+  });
+
+  $('#bank-body').innerHTML = term ? highlight(html, term) : html;
+}
+
+/* ═══════════════════════════ 模式：原文 ═══════════════════════════ */
+let showRisk = true;
+
+function initPaper() {
+  const m = D.paperMeta;
+  $('#paper-meta').innerHTML =
+    `<span class="pm-title">${esc(m.title)}</span>
+     <span class="pm-line">${esc(m.course)} · ${esc(m.author)} · 提交于 ${esc(m.submitted)} · ${esc(m.wordish)}</span>`;
+
+  $('#paper-risk').addEventListener('click', () => {
+    showRisk = !showRisk;
+    $('#paper-risk').classList.toggle('active', showRisk);
+    $('#paper-risk').textContent = showRisk ? '显示风险批注' : '只看原文';
+    renderPaper();
+  });
+  renderPaper();
+}
+
+function renderPaper() {
+  $('#paper-body').innerHTML = D.paper.map(sec => `
+    <section class="paper-sec">
+      <h3 class="paper-sec-head">${esc(sec.section)}<span class="cn">${esc(sec.cn)}</span></h3>
+      ${sec.paras.map(p => `
+        <div class="para">
+          ${p.label ? `<p class="para-label">${esc(p.label)}</p>` : ''}
+          <p class="para-text">${esc(p.text)}${say(p.text, 'en-US', '念这一段原文')}</p>
+          ${p.hooks && p.hooks.length ? `
+            <div class="para-hooks">
+              <span class="hooks-label">会被问</span>
+              ${p.hooks.map(id => {
+                const q = BY_ID[id];
+                if (!q) return '';
+                return `<button class="hook" data-jump="${id}" title="${esc(q.q)}">
+                          <span class="hook-id">${id}</span>${esc(q.qcn)}
+                        </button>`;
+              }).join('')}
+            </div>` : ''}
+          ${showRisk && p.risk ? `
+            <div class="callout callout-risk">
+              <span class="callout-label">这一段自己带的风险</span>${inline(p.risk)}
+            </div>` : ''}
+        </div>`).join('')}
+    </section>`).join('');
+
+  $$('#paper-body [data-jump]').forEach(b =>
+    b.addEventListener('click', () => jumpToQuestion(b.dataset.jump)));
+}
+
+/* 从原文/死穴跳到题库里的那一题并展开 */
+function jumpToQuestion(id) {
+  setMode('bank');
+  $('#bank-search').value = '';
+  $('#bank-group').value = '';
+  $('#bank-level').value = '';
+  $('#bank-status').value = '';
+  bankExpanded = false;
+  $('#bank-expand').textContent = '全部展开';
+  renderBank();
+  const el = $('#bank-' + id);
+  if (el) {
+    el.open = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.transition = 'box-shadow .3s';
+    el.style.boxShadow = '0 0 0 3px var(--accent-soft)';
+    setTimeout(() => { el.style.boxShadow = ''; }, 1600);
+  }
+}
+
+/* ═══════════════════════════ 模式：联动 ═══════════════════════════ */
+function renderLab() {
+  $('#lab-body').innerHTML = D.lab.map(l => `
+    <div class="lab-item">
+      <h3 class="lab-step">${esc(l.step)}</h3>
+      <div class="lab-grid">
+        <span class="lab-k">作业写的</span><span class="lab-v paper-quote">${esc(l.paper)}</span>
+        <span class="lab-k">你做过的</span><span class="lab-v">${inline(l.done)}</span>
+        <span class="lab-k">手册</span><span class="lab-v tech">${esc(l.tech)}</span>
+      </div>
+      <div class="lab-say">${esc(l.say)}${say(l.say, 'en-US', '念这句')}</div>
+      <p class="lab-edge">${inline(l.edge)}</p>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════ 模式：速记 ═══════════════════════════ */
+function renderQuick() {
+  /* 开场白 */
+  const o = D.opening;
+  // 开场白是唯一一段你该逐字背下来的东西，所以这里给一个整段连读——
+  // 听一遍就知道 60 秒到底装不装得下。
+  $('#quick-opening').innerHTML =
+    `<h2 style="font-size:20px;margin:0 0 6px">${esc(o.title)}
+       ${sayRun(o.en.map(b => b.text).join(' '), 'en-US', '整段连读')}</h2>
+     <p class="open-note">${esc(o.note)}</p>` +
+    o.en.map(b => `
+      <div class="open-beat">
+        <div class="open-beat-k">${esc(b.beat)}${say(b.text, 'en-US', '念这一拍')}</div>
+        <div class="open-beat-t">${esc(b.text)}</div>
+      </div>`).join('') +
+    `<div class="callout callout-risk" style="margin-top:22px">
+       <span class="callout-label">讲法</span>${richCN(o.cn)}</div>`;
+
+  /* 死穴 */
+  $('#quick-weak').innerHTML =
+    `<p class="lede" style="margin-bottom:20px">
+       按被抓住的代价排序。前三条<strong>必须</strong>练到能平静地接住——
+       接得好，一记硬伤会变成你全场最亮的时刻；硬撑则相反。
+     </p>` +
+    D.weakspots.map(w => `
+      <div class="weak-item weak-${w.severity}">
+        <div class="weak-head">
+          <span class="weak-what">${esc(w.what)}</span>
+          <span class="weak-sev sev-${w.severity}">${w.severity}</span>
+        </div>
+        <div class="weak-where">${esc(w.where)}</div>
+        <p class="weak-detail" style="margin-top:10px">${inline(w.detail)}</p>
+        <div class="weak-fix"><span class="callout-label" style="color:var(--core)">怎么接</span>${inline(w.fix)}</div>
+        ${w.note ? `<p class="weak-note">${inline(w.note)}</p>` : ''}
+        ${w.q ? `<div class="weak-jump"><button class="btn-ghost btn-tiny" data-jump="${w.q}">练这一题 → ${w.q}</button></div>` : ''}
+      </div>`).join('');
+
+  $$('#quick-weak [data-jump]').forEach(b =>
+    b.addEventListener('click', () => jumpToQuestion(b.dataset.jump)));
+
+  /* 数字 */
+  $('#quick-numbers').innerHTML =
+    `<p class="lede" style="margin-bottom:18px">这些必须能当场报出来，不能现推。</p>
+     <table class="numbers">
+       <thead><tr><th>项</th><th>值</th><th>为什么</th></tr></thead>
+       <tbody>${D.numbers.map(n =>
+         `<tr><td>${esc(n.k)}</td><td class="v">${esc(n.v)}</td><td class="why">${inline(n.why)}</td></tr>`
+       ).join('')}</tbody>
+     </table>`;
+
+  /* 术语 */
+  $('#quick-terms').innerHTML = D.terms.map(t => `
+    <div class="term">
+      <div class="term-h">
+        <span class="term-en">${esc(t.en)}${say(t.en, 'en-US', '念这个词')}</span>
+        <span class="term-cn">${esc(t.cn)}</span>
+      </div>
+      <p class="term-def">${inline(t.def)}${say(plain(t.def), 'zh-CN', '念释义')}</p>
+    </div>`).join('');
+
+  $$('.qnav').forEach(b => b.addEventListener('click', () => {
+    $$('.qnav').forEach(x => x.classList.remove('active'));
+    $$('.quick-pane').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    $('#quick-' + b.dataset.q).classList.add('active');
+  }));
+}
+
+/* ═══════════════════════════ 外壳 ═══════════════════════════ */
+function setMode(mode) {
+  stopSpeech();                 // 换面板时别让上一段还在念
+  $$('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + mode));
+}
+
+function updateStat() {
+  const g = Object.values(state.grades);
+  const good = g.filter(x => x === 'good').length;
+  const half = g.filter(x => x === 'half').length;
+  const bad  = g.filter(x => x === 'bad').length;
+  $('#stat-line').textContent = `${good}✓ ${half}~ ${bad}✕ / ${QS.length}`;
+}
+
+/* 只有你自己按过 ◐ 之后才往根元素上标 data-theme。没标的时候交给
+   prefers-color-scheme——发布成 Artifact 之后，外层宿主也是靠标这个属性
+   传递主题的，所以初始化时绝不去动它，免得把宿主的选择擦掉。 */
+function effectiveTheme() {
+  return document.documentElement.getAttribute('data-theme')
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function applyTheme() {
+  if (state.theme) document.documentElement.setAttribute('data-theme', state.theme);
+}
+
+function init() {
+  applyTheme();
+  $('#theme-toggle').addEventListener('click', () => {
+    state.theme = effectiveTheme() === 'dark' ? 'light' : 'dark';
+    save(); applyTheme();
+  });
+
+  $$('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  /* 演练 setup 交互 */
+  buildChips();
+  $('#drill-groups').addEventListener('click', e => {
+    const c = e.target.closest('[data-g]'); if (!c) return;
+    const id = c.dataset.g;
+    state.groups = state.groups.includes(id)
+      ? state.groups.filter(x => x !== id) : state.groups.concat(id);
+    c.classList.toggle('active');
+    save(); updateDrillCount();
+  });
+  $('#drill-levels').addEventListener('click', e => {
+    const c = e.target.closest('[data-l]'); if (!c) return;
+    const id = c.dataset.l;
+    state.levels = state.levels.includes(id)
+      ? state.levels.filter(x => x !== id) : state.levels.concat(id);
+    c.classList.toggle('active');
+    save(); updateDrillCount();
+  });
+  $$('.chip-all').forEach(b => b.addEventListener('click', () => {
+    state.groups = b.dataset.all === 'on' ? D.groups.map(g => g.id) : [];
+    save(); buildChips();
+  }));
+  $('#drill-weighted').addEventListener('click', () => {
+    state.weighted = !state.weighted;
+    $('#drill-weighted').classList.toggle('active', state.weighted);
+    save();
+  });
+  $('#drill-start').addEventListener('click', startDrill);
+  $('#drill-back').addEventListener('click', () => {
+    $('#drill-stage').hidden = true;
+    $('#drill-setup').hidden = false;
+    buildChips();
+  });
+  $('#drill-skip').addEventListener('click', () => {
+    drill.i++; showDrill(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  wireSay();
+  wirePad();
+
+  /* 空格翻面；Esc 或 S 停朗读 */
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input, select, textarea')) return;
+    if (e.code === 'Space' && $('#panel-drill').classList.contains('active')
+        && !$('#drill-stage').hidden && !drill.revealed) {
+      e.preventDefault(); reveal(); return;
+    }
+    if (e.key === 'Escape' || e.key === 's' || e.key === 'S') stopSpeech();
+  });
+
+  initBank();
+  initPaper();
+  renderLab();
+  renderQuick();
+  updateStat();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+})();
+
+
+/* ══════════ 单文件打包补丁 ══════════ */
+/* app.js 挂的是 DOMContentLoaded。宿主如果在文档已经就绪之后才注入这段，
+   那个事件永远不会再来，页面会停在一片空白——所以这里补一次直接调用。 */
+if (document.readyState !== 'loading') {
+  document.dispatchEvent(new Event('DOMContentLoaded'));
+}
+
+</script>
+</body>
+</html>
