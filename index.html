@@ -1849,7 +1849,7 @@ window.ORAL.questions = [
     '所以我在酵母里应该用 E. coli 来源的对，我的写法在这一点上不严谨'
   ],
   script: 'That is a fair hit, and I should correct it. Orthogonality is defined relative to a host — a pair is orthogonal only if the host\'s synthetases ignore its tRNA and its synthetase ignores the host\'s tRNAs. The Methanocaldococcus jannaschii TyrRS/tRNA pair is orthogonal in E. coli, which is exactly what reference three demonstrates. For Saccharomyces cerevisiae the established pair is the E. coli TyrRS with E. coli tRNA-Tyr-CUA, from the 2003 Science paper by the same group — the archaeal synthetase does not stay orthogonal against the eukaryotic translation machinery. So in yeast I should have specified the E. coli-derived pair. The rest of the design — amber codon, pBpa fed in the medium, UV crosslinking — is unchanged; only the source organism of the orthogonal pair is wrong.',
-  cn: '★★★ **这是全篇最可能被抓的硬伤，必须练到能平静地接住。**\n\n核心概念：**正交性不是分子的属性，是分子和宿主之间关系的属性。** 换宿主，正交性就要重新验证。一般规律是"选进化上离宿主远的来源"：\n- 在 **E. coli**（细菌）里 → 用**古菌**来源（MjTyrRS）\n- 在 **酵母/哺乳动物**（真核）里 → 用**细菌**来源（EcTyrRS）\n\n这个规律本身就是很漂亮的答案——它解释了为什么不能简单照搬。\n\n**接话的姿态**（这决定了这一刀是扣分还是加分）：\n1. 立刻承认，不辩解（"That is a fair hit"）\n2. 说出正确答案，并解释**为什么**是这样（正交性相对宿主）\n3. 明确划定错误的边界：只有来源生物错了，设计逻辑没错\n\n第 3 步很重要——它防止考官把这一个错误扩大成"整段都没想清楚"。\n\n**诚实说明**：我对 "酵母用 E. coli TyrRS/tRNA 对"（Chin et al., Science 2003, 301:964）这一点有较高把握，但你上考场前值得自己核一遍原文——CLAUDE.md 里说了，不能核实的引用要标出来而不是放过去。这条我标出来了。',
+  cn: '★★★ **这是全篇最可能被抓的硬伤，必须练到能平静地接住。**\n\n**现在已经逐字核过原文了**（references/chin-et-al-2002…pdf），事实如下：\n- 摘要原话：We have evolved an orthogonal aminoacyl-tRNA synthetase/tRNA pair that makes possible the in vivo incorporation of p-benzoyl-L-phenylalanine into proteins **in Escherichia coli** in response to the amber codon, TAG.\n- Methods 第一句：A library of **Methanococcus jannaschii** tyrosyl-tRNA synthetase (MjTyrRS) mutants…\n- 全文搜 yeast 和 Saccharomyces：**零命中**。\n\n所以这一刀是实的：你引的这篇只证明了 Mj 对在**大肠杆菌**里正交，对酵母只字未提。\n\n核心概念：**正交性不是分子的属性，是分子和宿主之间关系的属性。** 换宿主就要重新验证。一般规律是“选进化上离宿主远的来源”：\n- 在 **E. coli**（细菌）里 → 用**古菌**来源（MjTyrRS）——这篇做的就是这个\n- 在 **酵母/哺乳动物**（真核）里 → 用**细菌**来源（EcTyrRS）\n\n**接话的姿态**（这决定了这一刀是扣分还是加分）：\n1. 立刻承认，不辩解（That is a fair hit）\n2. 说出正确答案，并解释**为什么**（正交性相对宿主）\n3. 明确划定错误的边界：只有来源生物错了，pBpa 的光化学和交联设计都没错\n\n第 3 步很重要——它防止考官把这一个错误扩大成“整段都没想清楚”。\n\n**顺带一个可能被问到的小点**：那篇论文写的是 *Methanococcus* jannaschii（旧属名），你作业里写的是 *Methanocaldococcus* jannaschii。**你写的才是现行的有效名**（该属已重新分类），所以这不是错，反而比原文新。考官拿两者对比的话，直接这么解释。\n\n**仍需你自己核实的一点**：酵母里的标准正交对是 E. coli TyrRS/tRNA^Tyr_CUA（Chin et al., Science 2003, 301:964）——这一条我把握较高，但手上没有那篇 PDF，没能像上面三条那样逐字核对。上考场前查一下。',
   followups: [
     { q: 'What is the general rule for picking an orthogonal pair?', a: '选一个进化距离宿主远的来源。tRNA 的识别元件（identity elements）在进化上保守，所以近缘生物的 aaRS/tRNA 会交叉识别。细菌宿主用古菌来源，真核宿主用细菌来源——这就是为什么 Mj 对在 E. coli 里行、在酵母里不行。' },
     { q: 'How would you verify orthogonality experimentally?', a: '两个方向各测一个：① 只转 aaRS、不加 ncAA，看有没有把天然氨基酸掺进 amber 位点（如果有，说明它认了宿主的氨基酸或宿主 tRNA）；② 只转 tRNA、不转 aaRS，看 amber 位点有没有被读通（如果有，说明宿主的 aaRS 给它上载了）。两个对照都干净，才叫正交。' }
@@ -2510,12 +2510,12 @@ window.ORAL.terms = [
   def: '酵母展示最常用的载体（Chao 2006 定的标准）。结构是 Aga2p—linker—HA tag—插入片段—c-Myc tag，GAL1 启动子驱动，TRP1 做营养缺陷选择，2µ 高拷贝。你作业里的读数完全依赖它这个 HA 在前、c-Myc 在后的几何。' },
 
 { en: 'HA tag', cn: 'HA 标签', group: 'display',
-  match: ['HA tag', 'HA 标签'],
-  def: '序列 YPYDVPDYA，来自流感血凝素（haemagglutinin）。在 pCTCON2 里它位于 Aga2p 和插入片段**之间**，也就是靠近细胞壁的近端（proximal）。在你的方案里它是内参：报告"挑战之前这个细胞本来展示了多少"。' },
+  match: ['HA tag', 'HA 标签', 'HA'],
+  def: '**HA = haemagglutinin，流感血凝素**。序列 YPYDVPDYA，九个氨基酸的表位标签——它和流感病毒本身没有关系，只是借那段序列当一个"把手"，让抗体（Mab 12CA5）能认出来。位置在 Aga2p 和插入片段**之间**，也就是靠近细胞壁的近端（proximal）。在你的方案里它是内参：报告"挑战之前这个细胞本来展示了多少"。★ 已对照 Boder & Wittrup 1997 Fig. 1 核实。' },
 
 { en: 'c-Myc tag', cn: 'c-Myc 标签', group: 'display',
   match: ['c-Myc tag', 'c-Myc'],
-  def: '序列 EQKLISEEDL，来自人 c-Myc 蛋白，经典抗体是 9E10。它在构建体的最 C 端，也就是远端（distal）。切割发生在它和 HA 之间时它会丢失——这就是你的信号。' },
+  def: '序列 EQKLISEEDL，十个氨基酸，取自人 c-Myc 蛋白，抗体用 Mab 9E10。它在构建体的最 C 端，也就是远端（distal）。切割发生在它和 HA 之间时它会丢失——这就是你的信号。★ 已对照 Boder & Wittrup 1997 Fig. 1 核实：那张图画的正是 细胞壁—Aga1—两对二硫键—Aga2—HA—scFv—c-myc。' },
 
 { en: 'Proximal / distal', cn: '近端 / 远端', group: 'display',
   match: ['proximal', 'distal', '近端', '远端'],
@@ -2579,7 +2579,7 @@ window.ORAL.terms = [
   def: '合成时在指定位置混入多种碱基，一次合成就得到一整群序列。你文库的全部多样性都由这一条便宜的寡核苷酸携带——瓶颈在寡核苷酸合成，不在克隆效率，这正是这条路线适合建库的原因。' },
 
 { en: 'Homologous recombination', cn: '同源重组', group: 'library',
-  match: ['homologous recombination', '同源重组'],
+  match: ['homologous recombination', '同源重组', 'HR'],
   def: '酵母用自己的 DNA 修复机器，把带同源臂的片段和线性化载体在**体内**拼成完整质粒，不需要连接酶、不需要酶切位点。四步：末端切除 → Rad51 丝 → 链入侵形成 D-loop → 延伸连接。酵母偏好走这条路（哺乳动物偏 NHEJ），所以它当克隆宿主特别强。' },
 
 { en: 'Homology arm', cn: '同源臂', group: 'library',
@@ -2587,11 +2587,11 @@ window.ORAL.terms = [
   def: '引物 5\' 端外挂的一段与载体相同的序列，酵母电转常用 ~40 bp。聚合酶只从 3\' 端延伸，所以 5\' 端挂什么都会被原样复制进产物——产物两端因此带上载体序列，进细胞后就能被重组机器认出来接上。' },
 
 { en: 'MRX complex', cn: 'MRX 复合物', group: 'library',
-  match: ['MRX', 'Mre11', 'Rad50', 'Xrs2'],
+  match: ['MRX', 'Mre11', 'Rad50', 'Xrs2', 'Exo1'],
   def: 'Mre11-Rad50-Xrs2。和 Exo1 一起做**末端切除**：把线性 DNA 的 5\' 端啃掉，露出 3\' 单链尾巴。这是同源重组的第一步，没有它 Rad51 无处可装。' },
 
 { en: 'Rad51 / Rad52', cn: 'Rad51 / Rad52', group: 'library',
-  match: ['Rad51', 'Rad52'],
+  match: ['Rad51', 'Rad52', 'RecA'],
   def: 'Rad51 是细菌 RecA 的真核同源物，在 Rad52 协助下装载到 3\' 单链 DNA 上形成核蛋白丝，然后去搜索同源序列并侵入双链。这条通路从细菌（RecA）到酵母（Rad51）到人（RAD51）是保守的。' },
 
 { en: 'D-loop', cn: '置换环', group: 'library',
@@ -2599,7 +2599,7 @@ window.ORAL.terms = [
   def: 'Rad51 丝侵入同源双链后，把原来那条同源链挤出去所形成的结构（displacement loop）。它既是链入侵成功的标志，也是 DNA 聚合酶开始延伸的起点。' },
 
 { en: 'NHEJ', cn: '非同源末端连接', group: 'library',
-  match: ['NHEJ'],
+  match: ['NHEJ', 'double-strand break', 'DSB', '双链断裂'],
   def: 'Non-homologous end joining。不依赖同源序列、直接把断裂的两端接上的修复方式，容易留下小的插入缺失。哺乳动物细胞主要走这条；酵母主要走同源重组——这个偏好差异就是酵母好用的根本原因。' },
 
 { en: 'Linearised vector', cn: '线性化载体', group: 'library',
@@ -2646,7 +2646,7 @@ window.ORAL.terms = [
 
 /* ═══════════════════════ 蛋白酶与消化 ═══════════════════════ */
 { en: 'Protease / peptidase', cn: '蛋白酶', group: 'protease',
-  match: ['protease', '蛋白酶'],
+  match: ['protease', '蛋白酶', 'endopeptidase', 'exopeptidase', '内肽酶', '外肽酶'],
   def: '水解肽键的酶。**内肽酶**（endopeptidase）从链中间切，**外肽酶**（exopeptidase）从末端一个个啃。按催化机制分成丝氨酸、天冬氨酸、半胱氨酸、金属蛋白酶等大类——机制决定了它需要什么 pH，这是口试常考的联动。' },
 
 { en: 'Pepsin', cn: '胃蛋白酶', group: 'protease',
@@ -2662,7 +2662,7 @@ window.ORAL.terms = [
   def: '靠 Ser-His-Asp **催化三联体**工作：His 当碱夺走 Ser 的质子，活化的 Ser 氧原子亲核进攻底物羰基碳，形成共价的酰基-酶中间体，再被水解掉。trypsin、chymotrypsin、elastase 都属于这一类，最适 pH 偏碱。' },
 
 { en: 'Catalytic triad', cn: '催化三联体', group: 'protease',
-  match: ['catalytic triad', '催化三联体'],
+  match: ['catalytic triad', '催化三联体', 'Ser-His-Asp'],
   def: 'Ser-His-Asp 三个残基在空间上靠拢形成的催化中心。Asp 通过氢键稳定质子化的 His，His 活化 Ser，Ser 完成亲核进攻。生化里最经典的机制之一，值得能画出来。' },
 
 { en: 'Trypsin', cn: '胰蛋白酶', group: 'protease',
@@ -2872,7 +2872,7 @@ window.ORAL.terms = [
   def: '本身不是抗原，但能增强针对抗原的免疫应答的东西。通常靠激活固有免疫的模式识别受体来提供"危险信号"。酵母的 β-glucan 通过 Dectin-1 起的就是这个作用。' },
 
 { en: 'Enteric coating', cn: '肠溶包衣', group: 'immuno',
-  match: ['enteric coating', '肠溶包衣'],
+  match: ['enteric coating', '肠溶包衣', 'Eudragit'],
   def: 'pH 响应的聚合物包衣（如 Eudragit 系列的甲基丙烯酸共聚物）：在胃酸里羧基质子化、不溶；到小肠 pH > 5.5 去质子化而溶解。挡得住胃，但按设计就是在小肠溶开的——所以挡不住胰酶。' },
 
 { en: 'GRAS', cn: '公认安全', group: 'immuno',
@@ -2950,12 +2950,106 @@ window.ORAL.terms = [
   def: '2µ 是高拷贝复制起点（每个细胞几十份质粒），表达量高；CEN 是着丝粒型、单拷贝，更稳定。做文库时拷贝数要紧：一个细胞里进了多个**不同**的质粒会打破基因型-表型的一一对应。' },
 
 { en: 'Lyticase', cn: '细胞壁裂解酶', group: 'reagent',
-  match: ['Lyticase', 'lyticase'],
+  match: ['Lyticase', 'lyticase', 'spheroplast', '原生质体'],
   def: '消化酵母细胞壁 β-葡聚糖的酶。酵母壁厚，常规 miniprep 的碱裂解破不开，所以要先用它去壁才能提质粒——分选完把基因型拿回来的第一步。' },
 
 { en: 'Whole-plasmid PCR', cn: '全质粒 PCR', group: 'reagent',
   match: ['whole-plasmid PCR', '全质粒 PCR'],
-  def: '用一对背对背的引物把整个质粒扩出来，得到线性产物。相当于"在任意位置切开质粒"，不依赖唯一酶切位点。配合 DpnI 消化掉甲基化的环状模板，就得到干净的线性载体。' }
+  def: '用一对背对背的引物把整个质粒扩出来，得到线性产物。相当于"在任意位置切开质粒"，不依赖唯一酶切位点。配合 DpnI 消化掉甲基化的环状模板，就得到干净的线性载体。' },
+
+/* ═══════ 第二轮审计补充：v1 阈值卡掉、或只在别的释义里出现过的 ═══════ */
+
+{ en: '(G4S)ₙ linker', cn: '甘氨酸-丝氨酸柔性 linker', group: 'display',
+  match: ['G4S', 'Gly-Gly-Gly-Gly-Ser'],
+  def: '最常用的柔性连接肽：Gly-Gly-Gly-Gly-Ser 重复若干次。Gly 没有侧链、Ser 侧链极小，所以主链几乎不受限制，柔性最大。★ 但这正是本课题的要害——全 Gly/Ser 的组成恰好落在 **elastase** 的偏好里，极端柔性又让它能轻松以伸展构象钻进活性位点。标准展示 linker 在设计上就是双重易切的。' },
+
+{ en: 'Conformational accessibility', cn: '构象可及性', group: 'method',
+  match: ['conformation', 'conformational', '构象'],
+  def: '底物那根肽键能不能真的被送进酶的活性位点。蛋白酶的 cleft 要求底物以**伸展构象**嵌进去，还要没有空间遮挡。★ 这是"理性设计做不到"的根本原因：序列偏好算得出来，构象可及性算不出来——而选择实验一次就把两者一起测了。' },
+
+{ en: 'Pre-sort', cn: '预分选', group: 'flow',
+  match: ['pre-sort', 'pre-sorted', '预分选'],
+  def: '蛋白酶挑战**之前**先按 HA 和 c-Myc 双阳性收一遍。作用是把两类垃圾清掉：完全不展示的细胞，以及 NNK 带来的约 15% 提前终止（它们是 HA 阳性、c-Myc 阴性——和"被切断"的表型一模一样）。不先清掉，后面的选择压就被稀释了。' },
+
+{ en: 'X-Pro bond', cn: 'X-Pro 肽键', group: 'protease',
+  match: ['X-Pro', 'Lys-Pro', 'Arg-Pro', 'proline-rich'],
+  def: '下一位残基是脯氨酸的那根肽键。多数丝氨酸蛋白酶**切不动**它——Pro 没有主链 N–H，形不成活性位点要求的氢键网络，环状侧链还造成位阻。所以 trypsin 遇到 Lys-Pro 或 Arg-Pro 就跳过。这是"加脯氨酸能抗切"的分子层理由，比"变刚了"具体得多。' },
+
+{ en: 'Stop codons (TAA / TAG / TGA)', cn: '三个终止密码子', group: 'library',
+  match: ['TAA', 'TGA', 'UAA', 'UAG', '终止密码子'],
+  def: 'UAA（ochre）、UAG（amber）、UGA（opal）。NNK 只保留 TAG，因为 TAA 和 TGA 第三位是 A、被 K（G/T）排除。★ 对你的构建体还有一层：如果引入 amber 抑制系统，真正的终止子如果也是 TAG 就会被读通，所以该换成 TAA，而且串两个。' },
+
+{ en: 'Anticodon CUA', cn: 'CUA 反密码子', group: 'ncaa',
+  match: ['CUA'],
+  def: '抑制型 tRNA 的反密码子，和 mRNA 上的 UAG 配对，所以它能"读"amber 密码子。写作 tRNA^Tyr_CUA 时，上标说的是它携带哪种氨基酸、下标说的是它认哪个密码子。' },
+
+{ en: 'GATC', cn: 'GATC 位点', group: 'library',
+  match: ['GATC'],
+  def: 'Dam 甲基转移酶的识别序列，也是 DpnI 的切割位点。DpnI 只切**两条链的 A 都被甲基化**的 GATC——大肠杆菌提的模板有，PCR 产物没有，靠这个区分新旧。' },
+
+{ en: 'Glycosylation', cn: '糖基化', group: 'display',
+  match: ['glycosylation', '糖基化'],
+  def: '在蛋白上共价接糖链的翻译后修饰，需要内质网和高尔基体里的一整套糖基转移酶。原核生物基本没有——这是噬菌体展示折叠不了病毒糖蛋白的原因之一，也是酵母（真核）能胜任的原因。' },
+
+{ en: 'Wild type', cn: '野生型', group: 'method',
+  match: ['wild-type', 'wild type', '野生型'],
+  def: '未经改造的原始版本。在这里特指带标准 (G4S)ₙ linker 的构建体——它是你所有比较的**阴性参照**：assay 开发时用它定动态范围的下限，最终验证时用它当对照臂。' },
+
+{ en: 'RBD', cn: '受体结合域', group: 'display',
+  match: ['RBD'],
+  def: 'Receptor-binding domain，冠状病毒 spike 蛋白上直接抓宿主受体的那个结构域。★ 这是**你自己课题**展示的蛋白：sarbecovirus RBD 的嵌合重组体。它有二硫键和糖基化，所以必须用真核系统展示——这正是"为什么用酵母不用噬菌体"最切身的例子。' },
+
+{ en: 'ACE2 / ACE2D', cn: '血管紧张素转换酶 2', group: 'display',
+  match: ['ACE2D', 'ACE2'],
+  def: 'SARS-CoV-2 等 sarbecovirus 进入细胞用的受体。★ 你的 binding sort 里它是**诱饵**：标上 CF640R、按 12 个浓度梯度加给展示 RBD 的酵母，本质是在扫 Kd。ACE2D 指的是它的二聚体形式。' },
+
+{ en: 'pJYDC4', cn: 'pJYDC4 展示载体', group: 'reagent',
+  match: ['pJYDC4'],
+  def: '★ **你自己用的**酵母展示载体，作业里对应的是标准的 pCTCON2。你建库时把它做 whole-plasmid PCR 线性化，再和 17 个亲本片段一起电转进酵母做体内同源重组。' },
+
+{ en: 'KYB / LCJ 编号', cn: '测序样品编号', group: 'seq',
+  match: ['KYB', 'LCJ'],
+  def: '★ 你送测的样品编号。**KYB** 系列是文库层面的 NGS（含 KYB403–407 这个未分选对照，正好是 round 0 的同构物）；**LCJ471–497** 是 27 个单克隆的 Sanger。口试里报得出具体编号，说明你不是在描述一个想象中的流程。' },
+
+{ en: 'NHS ester labelling', cn: 'NHS 酯标记', group: 'reagent',
+  match: ['NHS'],
+  def: 'N-羟基琥珀酰亚胺酯，在 pH 7–8 下与蛋白的伯胺（Lys 的 ε-氨基、N 端 α-氨基）成稳定酰胺键。★ 你标 ACE2D-CF640R 用的就是它：4× 摩尔比、避光 1 h、Tris 终止。缓冲液不能含 Tris 或甘氨酸——游离氨基会抢反应；而 Tris 恰恰因此拿来当终止液。' },
+
+{ en: 'DTT / reducing agent', cn: '还原剂', group: 'reagent',
+  match: ['DTT', '还原剂'],
+  def: '二硫苏糖醇，把二硫键还原成游离巯基。★ **这条不是推测——Boder & Wittrup 1997 明确报告过**：用 DTT 处理展示细胞后再染色，表面信号完全消失，因为整个 Aga2p 融合体被从 Aga1p 上还原下来了。所以肠道里的还原环境是一条真实的失效路径。它的表现是**双阴性**（HA 和 c-Myc 一起丢），降低回收率但不会污染高比值群。要区分的话，做一个只加 DTT、不加蛋白酶的对照。' },
+
+{ en: 'MEROPS', cn: 'MEROPS 数据库', group: 'protease',
+  match: ['MEROPS'],
+  def: '蛋白酶及其底物特异性的数据库，给出各酶在 P1/P1\' 等位置的残基偏好统计。合理用法是**用它缩小搜索空间**（比如设计文库时避开明显的 K/R），但不能用来挑最终序列——它算不了构象可及性。' },
+
+{ en: 'Biased randomisation', cn: '有偏随机化', group: 'library',
+  match: ['VNS', 'MAX', '22c-trick', 'trimer phosphoramidite', '三联体亚磷酰胺'],
+  def: 'NNK 之外的几种更精细的做法。**三联体亚磷酰胺**直接以密码子为单位合成，20 种氨基酸等比例、零终止子，但试剂很贵；**MAX / 22c-trick** 用几条简并引物混合逼近等比例；**VNS** 之类的有偏密码子只允许某个氨基酸子集，用来在保持位点数的同时压低多样性——代价是你事先假设了答案在哪个子空间里。' },
+
+{ en: 'ISM / CASTing', cn: '迭代饱和突变 · 分步 walking', group: 'library',
+  match: ['ISM', 'CASTing', 'walking'],
+  def: '不一次随机化十个位点，而是先固定五个筛出最优背景、再在赢家背景上随机化另外五个。这样每一轮的文库都在能覆盖的范围内。代价要诚实说：它只能走贪心路径，会错过需要**多位点同时改变**才能到达的解（上位效应）。' },
+
+{ en: 'GAL regulatory circuit', cn: 'GAL 调控回路', group: 'display',
+  match: ['Gal3', 'Gal80', 'Gal4', 'cAMP-CAP'],
+  def: 'Gal4 是激活因子，Gal80 平时把它按住，半乳糖存在时 Gal3 结合并解除 Gal80 的抑制 → Gal4 放开 → GAL1 转录。对照 lac：那边是阻遏物 LacI 加上 cAMP-CAP 的正向激活，葡萄糖通过降低 cAMP 间接关闭。逻辑镜像，机制细节不同。' },
+
+{ en: 'N-terminus / C-terminus', cn: 'N 端 / C 端', group: 'display',
+  match: ['C-terminus', 'C-terminal', 'N-terminal', 'N-terminus', 'N 端', 'C 端'],
+  def: '多肽链的两头：N 端有游离氨基，C 端有游离羧基；翻译从 N 端开始、往 C 端延伸。★ 你整个读数都建立在这个方向上——Aga2p 的 C 端接展示模块，c-Myc 又在展示模块的最 C 端，所以它离细胞壁最远、最先被切走。' },
+
+{ en: 'IgG / IgA', cn: '免疫球蛋白 G / A', group: 'immuno',
+  match: ['IgG'],
+  def: '抗体的两种类型。**IgG** 是血清里最主要的抗体，报告的是系统性免疫应答；**IgA**（黏膜表面以分泌型二聚体 sIgA 存在）才是肠道黏膜的主力。口服疫苗两个都测，但 sIgA 是主要终点——你要保护的是黏膜表面。你自己的 immune escape sort 用的血清 IgG 就是前者。' },
+
+{ en: 'Ribosome / translation', cn: '核糖体 · 翻译', group: 'ncaa',
+  match: ['ribosome', 'translation', '核糖体'],
+  def: '核糖体按 mRNA 上的密码子逐个接上氨基酸，这个过程就是翻译。amber 抑制发生在核糖体读到 UAG 的那一刻：抑制型 tRNA 和释放因子在同一个 A 位上竞争，谁先到谁决定这条链是继续延伸还是就此终止。' },
+
+{ en: 'Formulation', cn: '制剂 · 配方', group: 'immuno',
+  match: ['formulation', '制剂'],
+  def: '把活性成分做成能实际给药的形式——冻干粉、包衣片、脂质颗粒等。作业里它是被拿来对照的另一条路：包衣是**配方层面**的解决方案，可以随时叠加；而 linker 是**分子层面**的，必须花时间做。两者互补，不是二选一。' }
 ];
 
 
