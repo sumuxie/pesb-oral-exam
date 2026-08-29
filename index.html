@@ -3159,28 +3159,46 @@ const MARK = { good: '✓', half: '~', bad: '✕' };
    迟早会把标签内部也匹配掉。每个容器里同一个词只标第一次出现，
    不然 HA 出现 103 次会变成一片下划线。 */
 const TERMS = D.terms || [];
-const TERM_BY_KEY = {};
+const HAS_LATIN = /[a-z]/i;
+// 全大写的缩写（HA、FACS、NNK、MAX、ISM…）要按大小写敏感匹配，而且不给复数。
+// 否则 'HA' 的模式 \bha(?:s)?\b 会匹配英文单词 "has" —— 而每个容器只标第一次，
+// 于是 HA 这个词条永远被前面某个 "has" 抢走，真正的 HA 反而标不出来。
+// 同类隐患还有 MAX / ISM / IIS / HR。
+const isAcronym = k => /[A-Z]/.test(k) && !/[a-z]/.test(k);
+
+const TERM_BY_KEY = {};                        // 小写键 -> {term, key, acronym}
 TERMS.forEach((t, i) => {
   t._i = i;
   // only:'glossary' 的词条主内容里本来就没提，不参与正文标注，只在概念表里查
   if (t.only === 'glossary') return;
   (t.match && t.match.length ? t.match : [t.en]).forEach(k => {
-    const key = k.toLowerCase();
-    if (!TERM_BY_KEY[key]) TERM_BY_KEY[key] = t;
+    const lower = k.toLowerCase();
+    if (!TERM_BY_KEY[lower]) TERM_BY_KEY[lower] = { term: t, key: k, acronym: isAcronym(k) };
   });
 });
 
 // 长的先匹配，"aspartic protease" 才不会被 "protease" 抢走。
 const TERM_KEYS = Object.keys(TERM_BY_KEY).sort((a, b) => b.length - a.length);
-const HAS_LATIN = /[a-z]/i;
 // 拉丁词要词边界；中文没有词边界，直接匹配，所以 terms.js 里不放单字词。
 const TERM_RE = TERM_KEYS.length ? new RegExp(
   TERM_KEYS.map(k => {
+    const rec = TERM_BY_KEY[k];
     const esc_ = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (!HAS_LATIN.test(k[0])) return esc_;
-    // 拉丁词收尾允许一个复数 s，否则 "homology arm" 匹配不上 "homology arms"
+    if (rec.acronym) return '\\b' + esc_ + '\\b';
+    // 普通词收尾允许一个复数 s，否则 "homology arm" 匹配不上 "homology arms"
     return '\\b' + esc_ + (/[a-z]$/i.test(k) ? '(?:s)?\\b' : (/[0-9]$/.test(k) ? '\\b' : ''));
   }).join('|'), 'gi') : null;
+
+/* 把命中的文本回查成词条。复数是正则加出来的，回查时要把尾巴 s 去掉再试一次。 */
+function lookupTerm(matched) {
+  const lower = matched.toLowerCase();
+  const rec = TERM_BY_KEY[lower] || TERM_BY_KEY[lower.replace(/s$/, '')];
+  if (!rec) return null;
+  // 缩写必须原样大小写命中："has" 不算 "HA"，"max" 不算 "MAX"
+  if (rec.acronym && matched !== rec.key) return null;
+  return rec.term;
+}
 
 // 这些容器里不标：按钮、已经是术语的地方、以及供朗读的整段 script
 // （下划线会打断阅读节奏，而那一段的用途就是照着念）。
@@ -3209,7 +3227,7 @@ function annotate(root) {
     TERM_RE.lastIndex = 0;
     let m, last = 0, frag = null;
     while ((m = TERM_RE.exec(text))) {
-      const t = TERM_BY_KEY[m[0].toLowerCase()];
+      const t = lookupTerm(m[0]);
       if (!t || seen.has(t._i)) continue;
       seen.add(t._i);
       frag = frag || document.createDocumentFragment();
