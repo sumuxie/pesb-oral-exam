@@ -1142,6 +1142,47 @@ window.ORAL.questions = [
   trap: null,
   lab: null
 },
+{
+  id: 'a6', group: 'A', level: 'killer',
+  q: 'The brief said not to just describe your ongoing PhD project. You work on yeast display. Isn\'t this your PhD?',
+  qcn: '作业要求里写了"不要只是描述你正在做的 PhD"。你做的就是酵母展示。这不就是你的 PhD 吗？',
+  beats: [
+    '承认平台相同——酵母展示 + FACS，这一点我不否认',
+    '但问题不同：我的 PhD 问"哪些天然 RBD 序列已经能结合人 ACE2"，是一个关于自然变异的**调查**问题',
+    '这个课题问"能不能进化出一条自然界不存在的抗蛋白酶 linker"，是一个**设计**问题',
+    '多样性来源不同：天然序列重组 vs 人工 NNK 随机化',
+    '选择压不同：配体结合 vs 酶解存活',
+    '而且非天然氨基酸这一整块，我的 PhD 里完全没有对应物'
+  ],
+  script: 'The platform is the same — yeast display, FACS — and I would not pretend otherwise; that is exactly why I could think about it concretely. But almost everything else differs. My PhD asks a survey question: which naturally occurring sarbecovirus RBDs already bind human ACE2, using diversity that evolution generated and that I recombine. This asks a design question: can a linker that does not exist in nature be evolved to resist proteolysis, using diversity I generate synthetically with NNK. The selection pressure is enzymatic degradation rather than ligand binding, the engineering target is a part rather than a natural sequence, and the non-canonical amino acid work has no counterpart in my PhD at all. So: same instrument, different question.',
+  cn: '★★ **这是作业说明里明写的一条要求**：\n\n> *It can be inspired by your own research but please **do not just describe your ongoing MSc/PhD project**.*\n\n所以这道题不是"可能会问"，是**老师有理由问**。而且他大概率知道你在做什么。\n\n**"Same instrument, different question."** 这句话是这题的核心，值得原样背下来。\n\n把差别摊开讲，逐条对照最有说服力：\n\n| | 你的 PhD | 这个作业 |\n|---|---|---|\n| 问题类型 | 调查（自然界已有什么） | 设计（造一个不存在的） |\n| 多样性来源 | 天然序列重组，进化验证过 | NNK 人工随机化，无偏但有垃圾 |\n| 选择压 | ACE2 配体结合 | 蛋白酶酶解存活 |\n| 工程目标 | 不改造任何序列，只是筛 | 造一个新的功能部件 |\n| 非天然氨基酸 | 完全没有 | 必答项之一 |\n\n**不要辩解说"完全不一样"**——平台确实一样，硬撑只会显得心虚。承认相同的部分，然后把不同的部分讲得具体，反而更可信。\n\n还可以加一句加分的：正因为我熟这个平台，我才敢对可行性下判断（比如知道 10⁸ 转化子是天花板、知道第一轮该压到 1%）——**熟悉平台是这个提案的资产，不是它的问题**。',
+  followups: [
+    { q: 'Then what did you actually have to learn to write this?', a: '蛋白酶那一整块——胃肠道的酶谱、特异性、SGF/SIF 条件、怎么灭活——我的课题里完全没有。还有非天然氨基酸和 amber 抑制，也是全新的。这两块正好是作业里我最没有实操把握的部分（见联动里标 "全新·没做过" 的两条）。' },
+    { q: 'Could you have picked something further from your own work?', a: '可以，但那样我对可行性的判断会差很多——比如我不会知道文库容量的实际天花板在哪、第一轮该收多严。说明里写的是 "can be inspired by your own research"，我理解它允许我用熟悉的平台去问一个新问题，只是不能把现有课题原样交上来。' }
+  ],
+  trap: '★ 千万别说"这和我的 PhD 没关系"。老师看得出来，而且否认会让他继续追。承认平台 + 讲清问题不同，才是这题的正解。',
+  lab: '联动那一栏整个就是这题的材料——尤其"多样性从哪来"和"蛋白酶挑战"两条，一条讲相同、一条讲全新。'
+},
+{
+  id: 'a7', group: 'A', level: 'core',
+  q: 'The brief asked for three things in the methodology. Point at each one.',
+  qcn: '作业要求方法学里必须有三样东西。指出来。',
+  beats: [
+    'Mutagenesis / randomization → NNK 随机化 linker 的 4–5 个位点',
+    'Selection for function → 两段蛋白酶挑战 + 按 c-Myc/HA 比值 FACS 分选',
+    'Incorporation of non-canonical amino acids → amber 密码子 + 正交对 + pBpa 光交联',
+    '三样都在 Methodology 一节里，按顺序',
+    '第三样我明确定位成 follow-up，理由是它会污染主筛选的读数'
+  ],
+  script: 'Randomisation is the NNK library at four to five linker positions. Selection for function is the two-stage gastric-then-intestinal protease challenge followed by FACS on the c-Myc to HA ratio — the function being selected is retention of the distal construct. And the non-canonical amino acid is p-benzoyl-phenylalanine, incorporated at an amber codon with an orthogonal synthetase/tRNA pair, then photo-crosslinked with 365 nanometre light to tether the displayed module covalently. I deliberately placed that third element after the selection rather than inside it, and the reason is technical: amber suppression is incomplete, and a truncated construct is HA-positive and c-Myc-negative — indistinguishable from a cleaved linker. Putting it inside the selection would corrupt the readout the whole scheme depends on.',
+  cn: '★ **作业说明的原话**：\n\n> *methodology (including **mutagenesis/randomization, selections for function, incorporation of non-canonical amino acids**)*\n\n这三样是**点名要的**。所以这道题几乎一定会以某种形式出现，而且你要能一口气把三样对应上。\n\n最重要的是**第三样的处理方式**。你原文写的是 "I would treat this as a follow-up rather than part of the main selection"——这在科学上完全正确，但讲的时候有个风险：听起来像在**回避必答项**。\n\n正确的讲法是把顺序倒过来：\n1. 先说 **"the non-canonical amino acid is pBpa"**——先交答案，证明你做了\n2. 再说它怎么用（amber + 正交对 + 365 nm 交联）\n3. **最后**才解释为什么放在筛选之后，而且理由要给得硬（amber 截短的表型 = 被切断的表型）\n\n这样听起来是"我想清楚了才这么放"，而不是"我没打算认真做这块"。\n\n顺带：这三样正好对应定向进化的三要素里的两个（变异、选择），加上一个课程特有的要求。扩增（amplification）你原文也写了（分选后重新培养），可以一并提。',
+  followups: [
+    { q: 'Why is pBpa the right non-canonical amino acid for your project?', a: '因为我要的不是"改变一个残基的化学性质"，而是"多一条保留机制"。pBpa 的光交联能把展示模块共价钉在附近的支架上——那样即使 linker 被切断了，抗原也还留在细胞上。这是一个和"抗切"**正交**的第二重保险，不是同一件事买两份。' },
+    { q: 'Does the crosslink have to be to a specific partner?', a: '理想情况下是 Aga1p 或细胞壁甘露糖蛋白，但 pBpa 的作用距离只有约 3 Å，我没法从序列推断哪个位置正好贴着。实际做法是在 linker 上逐个位置扫描 amber 位点，测哪个交联效率最高——这本身是一个小型的定向进化。' }
+  ],
+  trap: '★ 别把非天然氨基酸讲成"顺便提一句的额外想法"。它是作业明确要求的三要素之一，讲得太轻会被当成没完成要求。',
+  lab: null
+},
 
 /* ═══════════════════════════ B · 展示系统 ═══════════════════════════ */
 {
@@ -2367,6 +2408,24 @@ window.ORAL.numbers = [
 
 /* ─────────────────────────── 死穴清单 ─────────────────────────── */
 window.ORAL.weakspots = [
+  {
+    id: 'w0', severity: 'critical',
+    what: '"不要只是描述你的 PhD 课题" —— 而你用的是同一个平台',
+    where: '作业说明原文要求（不在你的文档里，在题目里）',
+    detail: '说明里明写：*It can be inspired by your own research but please **do not just describe your ongoing MSc/PhD project***。你的 PhD 是酵母展示 + FACS，作业也是酵母展示 + FACS。平台完全相同，而且老师大概率知道你在做什么。',
+    fix: '**承认平台相同，然后把不同的部分讲具体**：问题类型（调查 vs 设计）、多样性来源（天然重组 vs NNK 人工）、选择压（配体结合 vs 酶解存活）、以及非天然氨基酸这一整块在你 PhD 里根本没有。一句话概括：**"Same instrument, different question."** 绝对不要说"跟我的 PhD 没关系"——否认只会招来更多追问。',
+    q: 'a6',
+    note: '还可以反过来加分：正因为熟这个平台，我才敢对可行性下判断（10⁸ 转化子的天花板、第一轮压到 1%）。熟悉是资产，不是问题。'
+  },
+  {
+    id: 'w0b', severity: 'critical',
+    what: '非天然氨基酸是必答项，但你把它写成了 follow-up',
+    where: '作业说明的方法学要求 + 你原文第 15 段',
+    detail: '说明把 *incorporation of non-canonical amino acids* 和随机化、功能筛选并列，作为方法学**必须包含**的三要素之一。你写了（pBpa），但定位成 "a follow-up rather than part of the main selection"。科学上这个判断完全正确，但口头讲的时候有被当成"回避必答项"的风险——而且这块还压着 w1 那个正交对的硬伤。',
+    fix: '**把讲述顺序倒过来**：先给答案（the ncAA is pBpa），再讲怎么用（amber + 正交对 + 365 nm 交联），**最后**才解释为什么放在筛选之后——理由要给得硬：amber 抑制不完全，截短产物是 HA 阳性、c-Myc 阴性，和"被切断"的表型完全无法区分，放进筛选会直接污染读数。这样听起来是想清楚了才这么放，而不是没打算认真做。',
+    q: 'a7',
+    note: '这一条把 h1–h5 整组题的优先级都抬高了：老师点名要的东西，他一定会问。'
+  },
   {
     id: 'w1', severity: 'critical',
     what: '正交对搞错了宿主',
