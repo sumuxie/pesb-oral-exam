@@ -262,6 +262,25 @@ input[type="search"]:focus, select:focus { outline: 2px solid var(--accent-soft)
 }
 .qcard-body { padding: 4px 26px 26px; }
 
+/* ─────────────────────────── 图 ───────────────────────────
+   手写 inline SVG，颜色走 CSS 变量，所以深浅色主题都跟着走。
+   窄屏时不缩小到看不清，而是让图自己横向滚动。 */
+.fig {
+  margin: 4px 0 0; padding: 16px 14px 12px;
+  background: var(--bg-panel); border: 1px solid var(--rule);
+  border-radius: var(--radius); overflow-x: auto;
+}
+.fig svg {
+  display: block; margin: 0 auto;
+  max-width: 100%; min-width: 560px; height: auto;
+  font-family: var(--sans); color: var(--ink);
+}
+.fig figcaption {
+  margin: 12px auto 0; max-width: 62ch;
+  font-size: 12.5px; line-height: 1.62; color: var(--ink-soft); text-align: center;
+}
+.fig figcaption strong { color: var(--ink); }
+
 .ans-block { margin: 22px 0 0; }
 .ans-label {
   font-size: 11px; text-transform: uppercase; letter-spacing: .1em;
@@ -3112,6 +3131,404 @@ window.ORAL.terms = [
 ];
 
 
+/* ══════════ data/figures.js ══════════ */
+/* =========================================================================
+   PESB 口试 · 图
+   只给"文字说不清、图能一眼看懂"的题配图。判断标准：这张图有没有让人看见
+   一个他本来要从散文里自己拼出来的机制。一句话能说清的，就写那句话。
+
+   全部手写 inline SVG：没有库、没有运行时、没有外部图片。
+   颜色用页面的 CSS 变量（--ink / --accent / --core / --killer），所以深浅色
+   主题都跟着走；只有承载含义的那一两个元素才用彩色。
+   ========================================================================= */
+
+window.ORAL = window.ORAL || {};
+
+window.ORAL.figures = {
+
+/* ───────────────────────── b1 · 构建体的顺序 ───────────────────────── */
+b1: {
+  caption: '从细胞壁往外。两个接头都是共价的（GPI 锚、二硫键），所以整条链的弱点不在锚定，' +
+           '而在中间那段普通肽键。HA 和 c-Myc 把要监测的区段夹在中间。',
+  alt: '构建体示意：细胞壁经 GPI 锚连 Aga1p，两对二硫键连 Aga2p，其后依次是 HA 标签、随机化 linker、抗原、c-Myc 标签',
+  svg: `<svg viewBox="0 0 744 158" role="img" aria-label="酵母展示构建体从细胞壁到 C 端的顺序">
+  <defs>
+    <marker id="b1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <text x="12" y="16" font-size="11" fill="var(--ink-faint)">从细胞壁往外 →</text>
+
+  <!-- 监测区段的括号：HA 到 c-Myc -->
+  <text x="478" y="30" font-size="11.5" fill="var(--accent)" text-anchor="middle">比值只报告这一段之内的切割</text>
+  <path d="M288,38 L288,48 M288,38 L668,38 M668,38 L668,48"
+        fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+
+  <!-- 细胞壁 -->
+  <rect x="12" y="62" width="34" height="50" fill="var(--bg-sunk)" stroke="currentColor" stroke-width="1.2"/>
+  <path d="M14,70 L44,62 M14,82 L44,74 M14,94 L44,86 M14,106 L44,98"
+        stroke="currentColor" stroke-width="0.8" opacity=".45"/>
+
+  <!-- GPI 锚 -->
+  <line x1="46" y1="87" x2="64" y2="87" stroke="currentColor" stroke-width="1.4"/>
+  <circle cx="55" cy="87" r="3.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+
+  <!-- Aga1p -->
+  <rect x="64" y="62" width="92" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="110" y="92" font-size="13" text-anchor="middle" fill="currentColor">Aga1p</text>
+
+  <!-- 两对二硫键 -->
+  <line x1="156" y1="76" x2="204" y2="76" stroke="currentColor" stroke-width="1.2"/>
+  <line x1="156" y1="98" x2="204" y2="98" stroke="currentColor" stroke-width="1.2"/>
+  <text x="180" y="72" font-size="9.5" text-anchor="middle" fill="var(--ink-faint)">S–S</text>
+  <text x="180" y="112" font-size="9.5" text-anchor="middle" fill="var(--ink-faint)">S–S</text>
+
+  <!-- Aga2p -->
+  <rect x="204" y="62" width="84" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="246" y="92" font-size="13" text-anchor="middle" fill="currentColor">Aga2p</text>
+
+  <!-- HA：保留的那一个 -->
+  <rect x="288" y="62" width="56" height="50" rx="4" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.4"/>
+  <text x="316" y="92" font-size="12.5" text-anchor="middle" fill="var(--core)">HA</text>
+
+  <!-- 随机化的 linker：唯一被改造的部件 -->
+  <rect x="344" y="62" width="108" height="50" rx="4" fill="var(--accent-soft)"
+        stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="398" y="83" font-size="12" text-anchor="middle" fill="var(--accent)">linker</text>
+  <text x="398" y="99" font-size="10" text-anchor="middle" fill="var(--accent)">NNK × 4–5</text>
+
+  <!-- 抗原 -->
+  <rect x="452" y="62" width="148" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="526" y="92" font-size="13" text-anchor="middle" fill="currentColor">抗原 antigen</text>
+
+  <!-- c-Myc：会丢的那一个 -->
+  <rect x="600" y="62" width="68" height="50" rx="4" fill="var(--killer-soft)" stroke="var(--killer)" stroke-width="1.4"/>
+  <text x="634" y="92" font-size="12.5" text-anchor="middle" fill="var(--killer)">c-Myc</text>
+
+  <line x1="668" y1="87" x2="700" y2="87" stroke="currentColor" stroke-width="1.2" marker-end="url(#b1a)"/>
+  <text x="716" y="91" font-size="10.5" fill="var(--ink-faint)">TAA</text>
+
+  <!-- 底部标签 -->
+  <text x="29"  y="132" font-size="10.5" text-anchor="middle" fill="var(--ink-faint)">细胞壁</text>
+  <text x="55"  y="146" font-size="10"   text-anchor="middle" fill="var(--ink-faint)">GPI</text>
+  <text x="180" y="132" font-size="10.5" text-anchor="middle" fill="var(--ink-faint)">两对二硫键</text>
+  <text x="316" y="132" font-size="10.5" text-anchor="middle" fill="var(--core)">近端 proximal</text>
+  <text x="398" y="132" font-size="10.5" text-anchor="middle" fill="var(--accent)">你要改的就是这段</text>
+  <text x="634" y="132" font-size="10.5" text-anchor="middle" fill="var(--killer)">远端 distal</text>
+</svg>`
+},
+
+/* ─────────────── f2 · 读数分得出什么、分不出什么 ─────────────── */
+f2: {
+  caption: '同一个"c-Myc 低、HA 正常"的读数，底下压着四种完全不同的事。' +
+           '第 2 行和第 4 行流式上一模一样——这就是为什么必须在挑战前 pre-sort；' +
+           '第 3 行不是得低分，而是从 gate 里彻底消失。',
+  alt: '四种情形对照：未被切、切在监测区内、切在 HA 近端、以及 NNK 提前终止，各自在流式上的表现',
+  svg: `<svg viewBox="0 0 792 336" role="img" aria-label="c-Myc 信号下降的四种可能来源及其流式表现">
+  <defs>
+    <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/>
+    </marker>
+  </defs>
+
+  <text x="30"  y="20" font-size="11" fill="var(--ink-faint)">细胞上剩下什么</text>
+  <text x="470" y="20" font-size="11" fill="var(--ink-faint)">流式上看到什么</text>
+
+  <!-- ───── 行 1：未被切 ───── -->
+  <text x="30" y="46" font-size="11" fill="var(--ink-faint)">① 未被切</text>
+  <rect x="30"  y="52" width="58" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="59"  y="71" font-size="10" text-anchor="middle" fill="currentColor">Aga2</text>
+  <rect x="88"  y="52" width="40" height="28" rx="3" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <text x="108" y="71" font-size="10" text-anchor="middle" fill="var(--core)">HA</text>
+  <rect x="128" y="52" width="56" height="28" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <rect x="184" y="52" width="90" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="229" y="71" font-size="10" text-anchor="middle" fill="currentColor">抗原</text>
+  <rect x="274" y="52" width="54" height="28" rx="3" fill="var(--killer-soft)" stroke="var(--killer)" stroke-width="1.2"/>
+  <text x="301" y="71" font-size="10" text-anchor="middle" fill="var(--killer)">c-Myc</text>
+  <line x1="352" y1="66" x2="392" y2="66" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f2a)"/>
+  <circle cx="418" cy="66" r="5" fill="var(--core)"/><text x="430" y="70" font-size="11" fill="currentColor">HA +</text>
+  <circle cx="490" cy="66" r="5" fill="var(--killer)"/><text x="502" y="70" font-size="11" fill="currentColor">c-Myc +</text>
+  <text x="592" y="70" font-size="11.5" fill="var(--core)">高比值 → 选中 ✓</text>
+
+  <!-- ───── 行 2：切在监测区内 ───── -->
+  <text x="30" y="124" font-size="11" fill="var(--ink-faint)">② 切在 HA 与 c-Myc 之间</text>
+  <rect x="30"  y="130" width="58" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="59"  y="149" font-size="10" text-anchor="middle" fill="currentColor">Aga2</text>
+  <rect x="88"  y="130" width="40" height="28" rx="3" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <text x="108" y="149" font-size="10" text-anchor="middle" fill="var(--core)">HA</text>
+  <rect x="128" y="130" width="28" height="28" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <path d="M158,124 L170,164 M170,124 L158,164" stroke="var(--killer)" stroke-width="2"/>
+  <g opacity=".28">
+    <rect x="184" y="130" width="90" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <rect x="274" y="130" width="54" height="28" rx="3" fill="none" stroke="var(--killer)" stroke-width="1.2" stroke-dasharray="3 3"/>
+  </g>
+  <text x="256" y="176" font-size="10" text-anchor="middle" fill="var(--ink-faint)">这一段漂走了</text>
+  <line x1="352" y1="144" x2="392" y2="144" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f2a)"/>
+  <circle cx="418" cy="144" r="5" fill="var(--core)"/><text x="430" y="148" font-size="11" fill="currentColor">HA +</text>
+  <circle cx="490" cy="144" r="5" fill="none" stroke="var(--killer)" stroke-width="1.5"/><text x="502" y="148" font-size="11" fill="currentColor">c-Myc −</text>
+  <text x="592" y="148" font-size="11.5" fill="currentColor">低比值 → 淘汰</text>
+
+  <!-- ───── 行 3：切在 HA 近端 ───── -->
+  <text x="30" y="202" font-size="11" fill="var(--ink-faint)">③ 切在 HA 近端（或二硫键被还原）</text>
+  <rect x="30"  y="208" width="58" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="59"  y="227" font-size="10" text-anchor="middle" fill="currentColor">Aga2</text>
+  <path d="M90,202 L102,242 M102,202 L90,242" stroke="var(--killer)" stroke-width="2"/>
+  <g opacity=".28">
+    <rect x="104" y="208" width="40" height="28" rx="3" fill="none" stroke="var(--core)" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <rect x="144" y="208" width="56" height="28" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <rect x="200" y="208" width="74" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <rect x="274" y="208" width="54" height="28" rx="3" fill="none" stroke="var(--killer)" stroke-width="1.2" stroke-dasharray="3 3"/>
+  </g>
+  <text x="216" y="254" font-size="10" text-anchor="middle" fill="var(--ink-faint)">整条都掉了</text>
+  <line x1="352" y1="222" x2="392" y2="222" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f2a)"/>
+  <circle cx="418" cy="222" r="5" fill="none" stroke="var(--core)" stroke-width="1.5"/><text x="430" y="226" font-size="11" fill="currentColor">HA −</text>
+  <circle cx="490" cy="222" r="5" fill="none" stroke="var(--killer)" stroke-width="1.5"/><text x="502" y="226" font-size="11" fill="currentColor">c-Myc −</text>
+  <text x="592" y="226" font-size="11.5" fill="var(--deep)">双阴性 → 掉出 gate</text>
+  <text x="592" y="241" font-size="10" fill="var(--ink-faint)">不是低分，是消失</text>
+
+  <!-- ───── 行 4：提前终止 ───── -->
+  <text x="30" y="280" font-size="11" fill="var(--ink-faint)">④ NNK 撞上 TAG，提前终止（约 15%）</text>
+  <rect x="30"  y="286" width="58" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="59"  y="305" font-size="10" text-anchor="middle" fill="currentColor">Aga2</text>
+  <rect x="88"  y="286" width="40" height="28" rx="3" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <text x="108" y="305" font-size="10" text-anchor="middle" fill="var(--core)">HA</text>
+  <rect x="128" y="286" width="28" height="28" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="4 2"/>
+  <text x="176" y="305" font-size="11" fill="var(--ink-faint)">TAG ⊣ 后面从未合成</text>
+  <line x1="352" y1="300" x2="392" y2="300" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f2a)"/>
+  <circle cx="418" cy="300" r="5" fill="var(--core)"/><text x="430" y="304" font-size="11" fill="currentColor">HA +</text>
+  <circle cx="490" cy="300" r="5" fill="none" stroke="var(--killer)" stroke-width="1.5"/><text x="502" y="304" font-size="11" fill="currentColor">c-Myc −</text>
+  <text x="592" y="304" font-size="11.5" fill="currentColor">低比值 → 淘汰</text>
+
+  <!-- ② 与 ④ 无法区分 -->
+  <path d="M770,144 L780,144 L780,300 L770,300" fill="none" stroke="var(--killer)" stroke-width="1.3"/>
+  <text x="786" y="216" font-size="11" fill="var(--killer)" transform="rotate(90 786 216)" text-anchor="middle">流式分不出这两种</text>
+</svg>`
+},
+
+/* ─────────────────── f6 · 四个门，按顺序套 ─────────────────── */
+f6: {
+  caption: '每一道门都在为下一道清理群体，顺序不能乱。第三道最容易被忘：比值是除法，' +
+           'HA 接近背景时分母极小，一点噪声就把比值顶到天上——那是数学假象，不是生物学。',
+  alt: '四步设门：完整细胞、去黏连、HA 下限、以及 c-Myc 对 HA 的对角门',
+  svg: `<svg viewBox="0 0 792 214" role="img" aria-label="FACS 四步设门的顺序">
+  <defs>
+    <marker id="f6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/>
+    </marker>
+  </defs>
+
+  <!-- ① FSC/SSC -->
+  <text x="95" y="20" font-size="11.5" text-anchor="middle" fill="currentColor">① 完整细胞</text>
+  <rect x="20" y="30" width="150" height="128" fill="none" stroke="var(--rule)" stroke-width="1"/>
+  <circle cx="105" cy="80" r="4" fill="currentColor" opacity=".55"/><circle cx="118" cy="92" r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="95"  cy="98" r="4" fill="currentColor" opacity=".55"/><circle cx="112" cy="72" r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="126" cy="84" r="4" fill="currentColor" opacity=".55"/><circle cx="100" cy="88" r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="38" cy="146" r="3" fill="currentColor" opacity=".3"/><circle cx="48" cy="140" r="3" fill="currentColor" opacity=".3"/>
+  <circle cx="32" cy="136" r="3" fill="currentColor" opacity=".3"/><circle cx="44" cy="150" r="3" fill="currentColor" opacity=".3"/>
+  <ellipse cx="110" cy="85" rx="34" ry="26" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="46" y="164" font-size="9.5" fill="var(--ink-faint)">碎片</text>
+  <text x="95" y="180" font-size="10" text-anchor="middle" fill="var(--ink-faint)">FSC-A × SSC-A</text>
+
+  <line x1="176" y1="94" x2="208" y2="94" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f6a)"/>
+
+  <!-- ② 去黏连 -->
+  <text x="290" y="20" font-size="11.5" text-anchor="middle" fill="currentColor">② 去黏连</text>
+  <rect x="215" y="30" width="150" height="128" fill="none" stroke="var(--rule)" stroke-width="1"/>
+  <line x1="228" y1="148" x2="352" y2="44" stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="248" cy="132" r="4" fill="currentColor" opacity=".55"/><circle cx="268" cy="116" r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="288" cy="98"  r="4" fill="currentColor" opacity=".55"/><circle cx="308" cy="82"  r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="328" cy="66"  r="4" fill="currentColor" opacity=".55"/>
+  <circle cx="262" cy="96"  r="4" fill="var(--killer)" opacity=".6"/><circle cx="284" cy="72" r="4" fill="var(--killer)" opacity=".6"/>
+  <text x="300" y="60" font-size="9.5" fill="var(--killer)">双联体</text>
+  <path d="M234,150 L246,140 L352,52 L340,44 Z" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="290" y="180" font-size="10" text-anchor="middle" fill="var(--ink-faint)">FSC-A × FSC-H</text>
+
+  <line x1="371" y1="94" x2="403" y2="94" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f6a)"/>
+
+  <!-- ③ HA 下限 -->
+  <text x="485" y="20" font-size="11.5" text-anchor="middle" fill="var(--accent)">③ HA 下限</text>
+  <rect x="410" y="30" width="150" height="128" fill="none" stroke="var(--rule)" stroke-width="1"/>
+  <path d="M418,150 C440,150 448,60 470,58 C492,56 500,120 524,138 C540,148 550,150 554,150"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity=".7"/>
+  <line x1="452" y1="34" x2="452" y2="154" stroke="var(--accent)" stroke-width="1.6"/>
+  <rect x="411" y="34" width="41" height="120" fill="var(--killer-soft)" opacity=".55"/>
+  <text x="430" y="100" font-size="9.5" text-anchor="middle" fill="var(--killer)">排除</text>
+  <text x="508" y="100" font-size="9.5" text-anchor="middle" fill="var(--ink-faint)">保留</text>
+  <text x="485" y="180" font-size="10" text-anchor="middle" fill="var(--ink-faint)">HA 强度</text>
+
+  <line x1="566" y1="94" x2="598" y2="94" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#f6a)"/>
+
+  <!-- ④ 对角门 -->
+  <text x="680" y="20" font-size="11.5" text-anchor="middle" fill="currentColor">④ 比值对角门</text>
+  <rect x="605" y="30" width="150" height="128" fill="none" stroke="var(--rule)" stroke-width="1"/>
+  <line x1="616" y1="148" x2="744" y2="44" stroke="var(--rule)" stroke-width="1" stroke-dasharray="3 3"/>
+  <circle cx="646" cy="134" r="4" fill="currentColor" opacity=".5"/><circle cx="668" cy="120" r="4" fill="currentColor" opacity=".5"/>
+  <circle cx="690" cy="106" r="4" fill="currentColor" opacity=".5"/><circle cx="712" cy="94"  r="4" fill="currentColor" opacity=".5"/>
+  <circle cx="662" cy="92"  r="4" fill="var(--core)"/><circle cx="684" cy="76" r="4" fill="var(--core)"/>
+  <circle cx="704" cy="62"  r="4" fill="var(--core)"/>
+  <path d="M622,120 L730,40 L744,52 L636,134 Z" fill="var(--core-soft)" opacity=".45" stroke="var(--core)" stroke-width="1.5"/>
+  <text x="700" y="46" font-size="9.5" fill="var(--core)">收集</text>
+  <text x="680" y="180" font-size="10" text-anchor="middle" fill="var(--ink-faint)">HA × c-Myc</text>
+</svg>`
+},
+
+/* ────────────────── e3 · 两段挑战为什么要串着做 ────────────────── */
+e3: {
+  caption: 'pH 不兼容是硬约束：pepsin 要 pH 2，胰酶要 pH 6.8，混在一起两边都不在最适。' +
+           '而中和这一步既是下一段的条件，又顺手把 pepsin 不可逆灭活——生理上它对应胰腺分泌碳酸氢盐。',
+  alt: '两段蛋白酶挑战的时序：pH 2 胃段、中和到 pH 8、pH 6.8 肠段，最后灭活洗涤再染色',
+  svg: `<svg viewBox="0 0 780 196" role="img" aria-label="胃段与肠段串联的蛋白酶挑战时序">
+  <defs>
+    <marker id="e3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- 胃段 -->
+  <rect x="24" y="34" width="216" height="72" rx="6" fill="var(--killer-soft)" stroke="var(--killer)" stroke-width="1.4"/>
+  <text x="132" y="56" font-size="12.5" text-anchor="middle" fill="var(--killer)">胃段 · pepsin</text>
+  <text x="132" y="75" font-size="10.5" text-anchor="middle" fill="currentColor">3.2 g/L · NaCl 2 g/L</text>
+  <text x="132" y="92" font-size="10.5" text-anchor="middle" fill="currentColor">pH 1.2–2.0 · 37 °C · 30 min</text>
+
+  <!-- 中和 -->
+  <line x1="264" y1="26" x2="264" y2="150" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="264" y="20" font-size="11" text-anchor="middle" fill="var(--accent)">中和</text>
+  <text x="264" y="124" font-size="10" text-anchor="middle" fill="var(--accent)">pH → 8</text>
+  <text x="264" y="138" font-size="9.5" text-anchor="middle" fill="var(--ink-faint)">pepsin 不可逆失活</text>
+
+  <!-- 肠段 -->
+  <rect x="288" y="34" width="216" height="72" rx="6" fill="var(--deep-soft)" stroke="var(--deep)" stroke-width="1.4"/>
+  <text x="396" y="56" font-size="12.5" text-anchor="middle" fill="var(--deep)">肠段 · pancreatin</text>
+  <text x="396" y="75" font-size="10.5" text-anchor="middle" fill="currentColor">10 g/L（trypsin · chymotrypsin</text>
+  <text x="396" y="92" font-size="10.5" text-anchor="middle" fill="currentColor">· elastase）pH 6.8 · 37 °C · 1 h</text>
+
+  <!-- 灭活 -->
+  <rect x="528" y="34" width="118" height="72" rx="6" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"/>
+  <text x="587" y="60" font-size="11.5" text-anchor="middle" fill="var(--accent)">灭活 + 冷洗</text>
+  <text x="587" y="78" font-size="10" text-anchor="middle" fill="currentColor">AEBSF</text>
+  <text x="587" y="93" font-size="10" text-anchor="middle" fill="currentColor">冰冷 PBSF ×3</text>
+
+  <!-- 染色 -->
+  <rect x="670" y="34" width="86" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="713" y="66" font-size="11.5" text-anchor="middle" fill="currentColor">染色</text>
+  <text x="713" y="84" font-size="10" text-anchor="middle" fill="var(--ink-faint)">上流式</text>
+
+  <!-- 时间轴 -->
+  <line x1="24" y1="166" x2="756" y2="166" stroke="currentColor" stroke-width="1.2" marker-end="url(#e3a)"/>
+  <text x="390" y="186" font-size="10.5" text-anchor="middle" fill="var(--ink-faint)">依次，不是同时 —— 串联的选择压是 AND，不是 OR</text>
+
+  <!-- 抗体警示 -->
+  <path d="M587,110 L587,124 L713,124 L713,110" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+  <text x="650" y="140" font-size="10" text-anchor="middle" fill="var(--accent)">不灭活就加抗体 → 抗体被切碎</text>
+</svg>`
+},
+
+/* ─────────────────── d5 · 酵母同源重组四步 ─────────────────── */
+d5: {
+  caption: '四步的顺序是口试必背：末端切除 → Rad51 丝 → 链入侵形成 D-loop → 延伸连接。' +
+           '酵母修复双链断裂主要走这条（哺乳动物偏 NHEJ），这就是它当克隆宿主特别强的根本原因。',
+  alt: '同源重组四步：MRX 与 Exo1 切除 5 端露出 3 单链尾，Rad51 装载成丝，侵入同源双链形成 D-loop，延伸后连接成环状质粒',
+  svg: `<svg viewBox="0 0 780 288" role="img" aria-label="酵母同源重组的四个步骤">
+  <defs>
+    <marker id="d5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/>
+    </marker>
+  </defs>
+
+  <!-- ① 线性 DNA -->
+  <text x="20" y="28" font-size="11.5" fill="currentColor">① 线性载体 + 带同源臂的片段</text>
+  <line x1="230" y1="24" x2="420" y2="24" stroke="currentColor" stroke-width="1.6"/>
+  <line x1="230" y1="34" x2="420" y2="34" stroke="currentColor" stroke-width="1.6"/>
+  <line x1="470" y1="24" x2="660" y2="24" stroke="var(--accent)" stroke-width="1.6"/>
+  <line x1="470" y1="34" x2="660" y2="34" stroke="var(--accent)" stroke-width="1.6"/>
+  <text x="565" y="16" font-size="10" text-anchor="middle" fill="var(--accent)">~40 bp 同源臂</text>
+  <line x1="425" y1="29" x2="465" y2="29" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 2"/>
+
+  <!-- ② 末端切除 -->
+  <text x="20" y="90" font-size="11.5" fill="currentColor">② 末端切除</text>
+  <text x="20" y="106" font-size="10" fill="var(--ink-faint)">MRX + Exo1 啃掉 5′ 端</text>
+  <line x1="230" y1="86" x2="380" y2="86" stroke="currentColor" stroke-width="1.6"/>
+  <line x1="230" y1="96" x2="420" y2="96" stroke="currentColor" stroke-width="1.6"/>
+  <text x="400" y="112" font-size="9.5" text-anchor="middle" fill="var(--core)">3′ 单链尾</text>
+  <line x1="510" y1="86" x2="660" y2="86" stroke="var(--accent)" stroke-width="1.6"/>
+  <line x1="470" y1="96" x2="660" y2="96" stroke="var(--accent)" stroke-width="1.6"/>
+  <path d="M380,86 L420,96" stroke="var(--core)" stroke-width="1.6"/>
+  <path d="M510,86 L470,96" stroke="var(--core)" stroke-width="1.6"/>
+
+  <!-- ③ Rad51 丝 + 链入侵 -->
+  <text x="20" y="164" font-size="11.5" fill="currentColor">③ Rad51 丝入侵 → D-loop</text>
+  <text x="20" y="180" font-size="10" fill="var(--ink-faint)">Rad52 协助装载</text>
+  <line x1="230" y1="168" x2="360" y2="168" stroke="currentColor" stroke-width="1.6"/>
+  <circle cx="378" cy="168" r="5" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <circle cx="392" cy="168" r="5" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <circle cx="406" cy="168" r="5" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.2"/>
+  <text x="392" y="152" font-size="9.5" text-anchor="middle" fill="var(--core)">Rad51</text>
+  <!-- 被入侵的双链，置换出一个环 -->
+  <path d="M440,180 L520,180 C548,180 548,160 576,160 L660,160" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+  <path d="M440,190 L660,190" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+  <line x1="412" y1="170" x2="470" y2="181" stroke="var(--core)" stroke-width="1.6"/>
+  <text x="548" y="152" font-size="9.5" text-anchor="middle" fill="var(--ink-faint)">D-loop（被挤出的链）</text>
+
+  <!-- ④ 延伸连接 -->
+  <text x="20" y="246" font-size="11.5" fill="currentColor">④ 聚合酶延伸 → 缺口连上</text>
+  <text x="20" y="262" font-size="10" fill="var(--ink-faint)">得到完整环状质粒</text>
+  <circle cx="440" cy="248" r="30" fill="none" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M440,218 A30,30 0 0,1 466,263" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+  <text x="440" y="252" font-size="10" text-anchor="middle" fill="var(--ink-faint)">质粒</text>
+  <line x1="500" y1="248" x2="540" y2="248" stroke="var(--ink-faint)" stroke-width="1.2" marker-end="url(#d5a)"/>
+  <text x="620" y="244" font-size="11" fill="currentColor">不需要连接酶</text>
+  <text x="620" y="260" font-size="11" fill="currentColor">不需要酶切位点</text>
+</svg>`
+},
+
+/* ─────────────── c4 · 变异 / 选择 / 扩增，为什么要分开 ─────────────── */
+c4: {
+  caption: '三要素各自落在方案的哪一步。关键是扩增和选择在时间上分开——' +
+           '葡萄糖里 GAL1 被抑制、不展示，生长速率因此进不了选择压。',
+  alt: '定向进化循环：NNK 随机化产生变异，蛋白酶挑战加分选施加选择，葡萄糖培养基里扩增，每轮加压',
+  svg: `<svg viewBox="0 0 700 268" role="img" aria-label="变异、选择、扩增三个阶段构成的定向进化循环">
+  <defs>
+    <marker id="c4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- 变异 -->
+  <rect x="30" y="40" width="170" height="76" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+  <text x="115" y="64" font-size="12.5" text-anchor="middle" fill="var(--accent)">变异 Variation</text>
+  <text x="115" y="84" font-size="11" text-anchor="middle" fill="currentColor">NNK × 4–5 位点</text>
+  <text x="115" y="101" font-size="10" text-anchor="middle" fill="var(--ink-faint)">同源重组建库</text>
+
+  <!-- 选择 -->
+  <rect x="265" y="40" width="170" height="76" rx="8" fill="var(--killer-soft)" stroke="var(--killer)" stroke-width="1.5"/>
+  <text x="350" y="64" font-size="12.5" text-anchor="middle" fill="var(--killer)">选择 Selection</text>
+  <text x="350" y="84" font-size="11" text-anchor="middle" fill="currentColor">蛋白酶挑战</text>
+  <text x="350" y="101" font-size="10" text-anchor="middle" fill="var(--ink-faint)">按 c-Myc/HA 比值分选</text>
+
+  <!-- 扩增 -->
+  <rect x="500" y="40" width="170" height="76" rx="8" fill="var(--core-soft)" stroke="var(--core)" stroke-width="1.5"/>
+  <text x="585" y="64" font-size="12.5" text-anchor="middle" fill="var(--core)">扩增 Amplification</text>
+  <text x="585" y="84" font-size="11" text-anchor="middle" fill="currentColor">SDCAA（葡萄糖）</text>
+  <text x="585" y="101" font-size="10" text-anchor="middle" fill="var(--ink-faint)">GAL1 关闭 · 不展示</text>
+
+  <line x1="206" y1="78" x2="259" y2="78" stroke="currentColor" stroke-width="1.4" marker-end="url(#c4a)"/>
+  <line x1="441" y1="78" x2="494" y2="78" stroke="currentColor" stroke-width="1.4" marker-end="url(#c4a)"/>
+
+  <!-- 回环 -->
+  <path d="M585,122 L585,168 L115,168 L115,124" fill="none" stroke="currentColor" stroke-width="1.4" marker-end="url(#c4a)"/>
+  <text x="350" y="162" font-size="11" text-anchor="middle" fill="currentColor">2–3 轮，每轮重新滴定加压</text>
+
+  <!-- 为什么分开 -->
+  <rect x="150" y="196" width="400" height="54" rx="6" fill="var(--bg-sunk)" stroke="var(--rule)" stroke-width="1"/>
+  <text x="350" y="218" font-size="11" text-anchor="middle" fill="currentColor">扩增期不展示，是有意的安排</text>
+  <text x="350" y="238" font-size="10.5" text-anchor="middle" fill="var(--ink-faint)">否则长得快的变体会每轮累积优势，生长速率变成选择压</text>
+</svg>`
+}
+
+};
+
+
 /* ══════════ app.js ══════════ */
 /* =========================================================================
    PESB 口试 — app.js
@@ -3262,6 +3679,7 @@ function lookupTerm(matched) {
 // 这些容器里不标：按钮、已经是术语的地方、以及供朗读的整段 script
 // （下划线会打断阅读节奏，而那一段的用途就是照着念）。
 const NO_ANNOTATE = [
+  'svg',                                      // ★ SVG 里塞 <span> 会直接不渲染
   'button', 'a', '.say-btn', '.say-run',      // 可点的东西，别嵌套
   '.term-en', '.term-def',                    // 概念表自己，会自我匹配
   '.tag', '.chip', '.verdict', '.lab-col-k', '.ans-label', 'code',
@@ -3604,6 +4022,12 @@ function wirePad() {
 /* full=true 显示答案区；用于演练翻面后和题库展开。 */
 function renderAnswer(q) {
   let h = '';
+
+  // 图排在最前：这类题（"把构建体画出来"）本来就是让你看着图说话的
+  const fig = (D.figures || {})[q.id];
+  if (fig) {
+    h += `<figure class="fig">${fig.svg}<figcaption>${inline(fig.caption)}</figcaption></figure>`;
+  }
 
   h += `<div class="ans-block"><div class="ans-label">说话顺序 · beats
           ${sayRun(plain(q.beats.join('。')), 'zh-CN', '念要点')}</div>
