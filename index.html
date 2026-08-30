@@ -247,6 +247,7 @@ input[type="search"]:focus, select:focus { outline: 2px solid var(--accent-soft)
 .tag-deep   { background: var(--deep-soft);   color: var(--deep); }
 .tag-killer { background: var(--killer-soft); color: var(--killer); }
 .tag-group  { background: var(--bg-sunk); color: var(--ink-soft); }
+.tag-fig    { background: var(--accent-soft); color: var(--accent); }
 .tag-id     { font-family: var(--mono); background: none; color: var(--ink-faint); padding: 2px 0; }
 
 .qcard-q {
@@ -1200,6 +1201,28 @@ window.ORAL.questions = [
     { q: 'Does the crosslink have to be to a specific partner?', a: '理想情况下是 Aga1p 或细胞壁甘露糖蛋白，但 pBpa 的作用距离只有约 3 Å，我没法从序列推断哪个位置正好贴着。实际做法是在 linker 上逐个位置扫描 amber 位点，测哪个交联效率最高——这本身是一个小型的定向进化。' }
   ],
   trap: '★ 别把非天然氨基酸讲成"顺便提一句的额外想法"。它是作业明确要求的三要素之一，讲得太轻会被当成没完成要求。',
+  lab: null
+},
+{
+  id: 'a8', group: 'A', level: 'killer',
+  q: 'Nature is full of protease-resistant peptides. What is actually new here?',
+  qcn: '抗蛋白酶的肽自然界多得是。你这个到底新在哪？',
+  beats: [
+    '新的不是"抗蛋白酶"，是"**又柔又抗切**"——这两个性质本身是冲突的',
+    '柔性来自没有结构；而没有结构正是蛋白酶最容易下手的地方',
+    '自然界的抗蛋白酶肽几乎都靠**约束**：环化、二硫键钉住、或者糖基化屏蔽',
+    '但那些手段都会牺牲柔性——而柔性正是 linker 存在的理由',
+    '所以我要的是一个自然界没有强选择压去优化的组合',
+    '而且产出的是一个**可复用的部件**，不是一条肽'
+  ],
+  script: 'What is new is not protease resistance on its own — nature has plenty of that. It is protease resistance combined with flexibility, and those two are in tension. A linker is flexible precisely because it has no fixed structure, and an unstructured extended chain is exactly what a protease active site is built to accept — that is why limited proteolysis is used to map disordered regions. Nature does solve this, but by constraining the peptide: cyclisation, disulfide staples in defensins and conotoxins, or heavy glycosylation as in mucins. Every one of those buys resistance by giving up flexibility, and flexibility is the entire reason the linker is there. So I am asking for a combination evolution has had no strong pressure to optimise. And the output is not a peptide, it is a reusable part: a display linker characterised for survival through a defined gastrointestinal challenge, which any yeast-surface-displayed protein meant to work in the gut would need.',
+  cn: '★★ **这道题问的就是"你这个项目的立足点在哪"**，也是最容易让人自己动摇的一题。答案是有的，而且相当结实。\n\n**核心张力：柔性和抗蛋白酶是一对冲突的性质。**\n\nlinker 之所以柔，是因为它没有固定结构。而"没有固定结构、能自由伸展"恰恰是蛋白酶活性位点要求底物具备的条件——蛋白酶的 cleft 需要底物以伸展构象嵌进去并形成类似 β 折叠的氢键。\n\n这不是推测，是一个被当成**实验手段**在用的事实：**limited proteolysis**（有限酶解）就是靠"蛋白酶优先切无结构区、折叠好的结构域切不动"来定位蛋白里的柔性区和无序区的。\n\n**这一条同时回答了两个问题**：\n1. 为什么靶点是 linker 而不是抗原——抗原是折叠的结构域，天然就比无结构的 linker 抗切得多。你不是随便挑了一段，你挑的是整条链上**内在最脆弱**的那一段。\n2. 为什么这不是个"已解决的问题"——自然界的抗蛋白酶肽（defensin 的二硫键笼、conotoxin、环肽、mucin 的重糖基化）**全都是靠约束换来的**，而约束会杀掉柔性。\n\n**一个可能让考官眼睛一亮的补充**：酵母的 Pmt 家族会对富含 Ser/Thr 的序列做 **O-甘露糖基化**。所以你的 NNK 文库里，有可能被选出来的赢家不是靠"避开切位点"，而是靠**长出糖基化位点、用糖壳把自己挡住**——这正是 mucin 在肠道里的策略。这是理性设计绝对想不到的解，而选择实验有可能直接把它交出来。能讲出这一层，这题就从"防守"变成了"加分"。\n\n**最后落到合成生物学的框架上**：产出不是一条肽，是一个**标准化的、被表征过的部件**。任何要在肠道里工作的酵母表面展示蛋白（口服疫苗、乳糖酶、植酸酶、麸质蛋白酶）都需要同一个零件。',
+  followups: [
+    { q: 'So why not just protect the antigen instead?', a: '因为抗原已经是折叠结构域了——它天然就比 linker 抗切。而且抗原携带表位，改它等于赌表位不受影响，风险回报比完全不对。工程学上应该先加固最弱的那一环。' },
+    { q: 'What if the winners are just proline-rich and rigid?', a: '那是个警报，不是失败。说明选择压确实起作用了（找到了抗切的解），但也正好落进 Possible Problem #1 预言的陷阱——所以必须紧接着测抗原可及性。真正无聊的结果是"富集出来的和纸面预测一模一样"，那本身也是个有价值的负结果：说明这个体系里序列组成主导、构象效应可忽略。' },
+    { q: 'Is there any precedent for evolving glycosylation as a shield?', a: '病毒糖蛋白的 glycan shield 是最著名的例子——HIV Env 和流感 HA 都靠糖壳躲避抗体。机制是空间遮蔽，和躲蛋白酶是同一个物理原理。所以这条路在生物学上是有先例的，只是没人拿它来做展示 linker。' }
+  ],
+  trap: '★ 不要答成"因为还没人做过"。新颖性要落在**机制**上——柔性与抗切的内在冲突——而不是落在文献检索上。',
   lab: null
 },
 
@@ -4060,11 +4083,14 @@ function renderAnswer(q) {
   return h;
 }
 
+const hasFig = id => !!(D.figures || {})[id];
+
 function qTags(q) {
   const g = GROUP[q.group];
   return `<div class="qcard-tags">
     <span class="tag tag-${q.level}">${q.level}</span>
     <span class="tag tag-group">${g.icon} ${g.cn}</span>
+    ${hasFig(q.id) ? '<span class="tag tag-fig" title="答案里有图">📐 有图</span>' : ''}
     <span class="tag tag-id">${q.id}</span>
   </div>`;
 }
@@ -4244,6 +4270,7 @@ function renderBank() {
         <summary>
           <span class="bank-mark ${cls}">${sym}</span>
           <span class="bank-q">${esc(q.q)}${say(q.q, 'en-US', '念这道题')}<span class="bank-qcn">${esc(q.qcn)}</span></span>
+          ${hasFig(q.id) ? '<span class="tag tag-fig" title="展开后有图">📐</span>' : ''}
           <span class="tag tag-${q.level}">${q.level}</span>
         </summary>
         <div class="bank-body">${renderAnswer(q)}</div>
