@@ -1226,6 +1226,29 @@ window.ORAL.questions = [
   lab: null
 },
 
+{
+  id: 'a9', group: 'A', level: 'killer',
+  q: 'Why engineer a generic linker at all? If I want a protease-resistant displayed protein, why not just make a library of that protein and select it directly?',
+  qcn: '为什么要单独做一个通用 linker？我要哪个蛋白抗切，直接拿那个蛋白建库筛不就完了？',
+  beats: [
+    '先承认：如果货物是酶，这个批评完全成立——饲料酶为了过胃，工业上改的就是酶本身',
+    '但对抗原不成立：抗原的序列就是产品，随机化它等于拿表位去赌',
+    '这就是不对称——linker 的序列是任意的，抗原的不是',
+    '决定性的一点：蛋白酶切无结构区、不切折叠结构域，所以 linker 是整条链内在最脆弱的一环',
+    '所以修 linker 不是"改造货物"的替代方案，是让改造货物有意义的**前提**：上游断了，再耐切的货物也整个漂走',
+    '而货物每个项目都换、linker 不换。同一个颗粒上抗原和靶向配体还共用它',
+    '诚实的界限：可复用目前是假设，要靠"换个货物还灵不灵"来验证'
+  ],
+  script: 'That criticism is partly right, and I should say where it lands. If the cargo is an enzyme — a feed phytase that has to survive the stomach — then yes, you evolve the enzyme itself, and industry does exactly that. It does not apply to an antigen: the antigen sequence is the product, so randomising it means gambling with the epitopes I am trying to deliver. That is the asymmetry — the linker sequence is arbitrary, the antigen sequence is not. And there is a harder point. Proteases cleave disordered chains and leave folded domains alone; that is why limited proteolysis is used to map flexible regions. So the linker is the intrinsically weakest bond in the construct. Hardening the cargo while leaving a scissile disordered segment upstream of it achieves nothing — cut there and the hardened cargo floats away too. Fixing the linker is not an alternative to engineering the cargo, it is the precondition for cargo engineering to matter. And the cargo changes every project while the linker does not, so solving it once amortises. Though I should be clear that reusability is a hypothesis until I show the same linker works with a different cargo.',
+  cn: '★★★ **这是对整个项目最有力的一记质疑**，比"新在哪"更难对付，因为它有一部分是对的。答好的关键是**先承认那一部分**。\n\n**批评成立的地方**：如果货物是**酶**，直接对酶建库确实是更短的路。饲料酶（植酸酶、木聚糖酶）为了过胃酸和胃蛋白酶，工业上改的就是酶本身。酶有活性可测、允许突变、序列不是产品——三个条件都满足。这条路径真实存在，别装作不存在。\n\n**批评不成立的地方**：抗原的序列**就是产品**。它的全部价值在于呈现特定表位，随机化它等于拿你要递送的东西去赌。所以"直接拿那个蛋白建库"这条路对酶开放、对抗原不开放。这就是不对称：**linker 的序列是任意的，抗原的不是。**\n\n**★ 真正决定性的一层**（抓住这个，质疑就翻过来了）：\n\n蛋白酶切无结构区、不切折叠好的结构域——这是 limited proteolysis 能当实验手段用的原因。所以整条构建体里，那段无结构的 linker 是**内在最脆弱**的一环，比折叠的抗原脆弱得多。\n\n于是：**你把货物改得再耐切，只要上游那段 linker 还能被切，货物照样整个漂走。**\n\n所以两者不是二选一，是串联的。一句值得原样说出口的话：\n\n> **Fixing the linker is not an alternative to engineering the cargo — it is the precondition for cargo engineering to matter.**\n\n**佐剂/靶向配体的角度**（这一点加强论证）：同一个槽位可以装抗原、装佐剂、装靶向 M 细胞的配体。一个真正的口服颗粒往往要**同时**展示抗原和靶向配体——它们**共用同一段 linker**。解决一次，颗粒上所有模块都受益。这就是"可复用部件"的具体含义：**变的是货物，不变的是接口。**\n\n**★ 诚实的界限，一定要自己讲出来**：可复用目前是**假设**不是结论。它成立的前提是换一个货物这条 linker 还灵——这正是 j4 里第三步实验，而且我把它排在动物实验**之前**，因为它决定了产出到底是一个**部件**还是一个**局部解**。如果换个货物就不行，那这个批评就完全成立了。',
+  followups: [
+    { q: 'So for an enzyme cargo, would you drop this approach?', a: '不会，但会**倒过来用**。先用这套选择拿到一条抗切 linker 作为固定底盘，再单独去改酶。两件事解决的是不同的失效点——linker 决定货物还在不在细胞上，酶的稳定性决定它还有没有活性。而且 linker 只做一次，用在酶上和用在抗原上是同一份投入。' },
+    { q: 'Is the antigen not going to be cut as well?', a: '会，而且这是我读数上的一个真实限制（见 i6）——比值分不出切在 linker 还是切在抗原里。但论证仍然干净：**变异只发生在 linker 上**，抗原对所有变体完全相同，所以它是均匀背景不是混淆因素。代价是动态范围被压缩，不是归因错误。' },
+    { q: 'What would make you abandon the generic-part framing?', a: '换一个抗原之后 linker 明显失效。那说明它的表现依赖于具体的邻接环境（大小、电荷、空间遮挡），我拿到的是一个 context-specific 解。那时候正确的做法是照实报告，把结论收窄成"这个组合下有效"，而不是继续声称通用。' }
+  ],
+  trap: '★ 不要一上来就辩护。这个批评有一部分是对的：先承认它成立的范围（酶），再讲它不成立的地方（抗原），最后才出那记决定性的（linker 是最弱环，所以是前提不是替代）。顺序反了就变成心虚。',
+  lab: '联动里"多样性从哪来"那一条正好对上：你自己的课题是重组天然序列（不能随机化 RBD，因为它是折叠结构域），作业是随机化一段 15 bp 的无结构 linker。两个课题为什么选了不同策略，答案就在"折叠 vs 无结构"这个区分上。'
+},
 /* ═══════════════════════════ B · 展示系统 ═══════════════════════════ */
 {
   id: 'b1', group: 'B', level: 'core',
