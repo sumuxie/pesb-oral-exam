@@ -1244,6 +1244,7 @@ window.ORAL.questions = [
   followups: [
     { q: 'So for an enzyme cargo, would you drop this approach?', a: '不会，但会**倒过来用**。先用这套选择拿到一条抗切 linker 作为固定底盘，再单独去改酶。两件事解决的是不同的失效点——linker 决定货物还在不在细胞上，酶的稳定性决定它还有没有活性。而且 linker 只做一次，用在酶上和用在抗原上是同一份投入。' },
     { q: 'Is the antigen not going to be cut as well?', a: '会，而且这是我读数上的一个真实限制（见 i6）——比值分不出切在 linker 还是切在抗原里。但论证仍然干净：**变异只发生在 linker 上**，抗原对所有变体完全相同，所以它是均匀背景不是混淆因素。代价是动态范围被压缩，不是归因错误。' },
+    { q: 'The yeast cell wall is already an adjuvant. So why does it matter whether the antigen is still attached?', a: '★ 因为**佐剂是无条件生效的**。β-glucan 通过 Dectin-1 起作用、颗粒性让 M cell 摄取，这些跟抗原还在不在完全无关。所以抗原被切走之后，你递送的是一个**完美的佐剂，佐着空气**——免疫系统被激活了，但没有东西可以认。佐剂不是我要解决的问题，佐剂是白送的；我要解决的是佐剂旁边到底还有没有抗原。这也是这个失效模式特别阴险的原因：颗粒数、存活率、甚至佐剂活性全都正常。' },
     { q: 'What would make you abandon the generic-part framing?', a: '换一个抗原之后 linker 明显失效。那说明它的表现依赖于具体的邻接环境（大小、电荷、空间遮挡），我拿到的是一个 context-specific 解。那时候正确的做法是照实报告，把结论收窄成"这个组合下有效"，而不是继续声称通用。' }
   ],
   trap: '★ 不要一上来就辩护。这个批评有一部分是对的：先承认它成立的范围（酶），再讲它不成立的地方（抗原），最后才出那记决定性的（linker 是最弱环，所以是前提不是替代）。顺序反了就变成心虚。',
